@@ -1,0 +1,2 @@
+overrides:
+  voyage-lib: link:../shared-workspace/dist/voyage-lib

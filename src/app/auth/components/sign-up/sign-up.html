@@ -1,0 +1,193 @@
+<div class="min-h-screen flex flex-col lg:flex-row shadow-[0_0_40px_rgba(0,0,0,0.1)]">
+
+  <!-- Left Side -->
+  <div
+    class="lg:w-1/2 relative bg-primary overflow-hidden flex flex-col justify-center items-center text-center px-10 py-20 lg:py-0">
+
+    <!-- Background Decor -->
+    <div class="absolute inset-0 opacity-10">
+      <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <!-- Reversed curve for variety but same fill -->
+        <path d="M0 0 C 50 100 80 100 100 0 Z" fill="white" />
+      </svg>
+    </div>
+    <!-- Blobs -->
+    <div
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-secondary mix-blend-multiply filter blur-[128px] opacity-20 animate-pulse">
+    </div>
+
+    <!-- Content -->
+    <div class="relative z-10 max-w-lg">
+      <h1 class="text-5xl font-sans font-bold tracking-tight mb-6 text-white leading-tight">
+        Join the <br /> <span class="text-secondary">Voyage</span> today.
+      </h1>
+      <p class="text-blue-100 text-lg font-light leading-relaxed mb-8">
+        "Start your financial journey with the most robust ledger system available. Secure, fast, and
+        beautiful."
+      </p>
+
+      <!-- Feature List -->
+      <div class="flex flex-wrap gap-3 justify-center">
+        <span class="px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm text-white border border-white/20">🚀
+          Fast Setup</span>
+        <span class="px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm text-white border border-white/20">🛡️
+          Secure</span>
+        <span class="px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm text-white border border-white/20">📊
+          Analytics</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Clean Form Area (Moved from Left) -->
+  <div class="lg:w-1/2 bg-background flex items-center justify-center p-8 sm:p-12 lg:p-16">
+    <div class="w-full max-w-lg">
+
+      <div class="text-center lg:text-left mb-8">
+        <h2 class="text-3xl font-bold text-foreground mb-2">Create Account</h2>
+        <p class="text-muted-foreground">Get started in minutes.</p>
+      </div>
+
+      <form (submit)="onSubmit($event)" class="space-y-5">
+
+        <!-- Full Name -->
+        <div>
+          <label for="fullName" class="block text-sm font-semibold text-muted-foreground mb-2">Full Name</label>
+          <input id="fullName" type="text" [formField]="signupForm.fullName"
+            class="w-full px-4 py-4 bg-input border border-gray-200 rounded-xl text-foreground placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all duration-200 shadow-sm"
+            placeholder="John Doe" />
+          @if(signupForm.fullName().touched() && signupForm.fullName().errors().length){
+          <p class="mt-1 text-sm text-red-500">{{signupForm.fullName().errors()[0].message}}</p>
+          }
+          <!-- @if (fullName?.invalid && fullName?.touched) { <p class="mt-1 text-sm text-red-500">Name is required
+          </p> } -->
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-semibold text-muted-foreground mb-2">Email Address</label>
+          <input id="email" type="email" [formField]="signupForm.email"
+            class="w-full px-4 py-4 bg-input border border-gray-200 rounded-xl text-foreground placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all duration-200 shadow-sm"
+            placeholder="john@example.com" />
+          @if (signupForm.email().touched() && signupForm.email().errors().length) {
+          <p class="mt-1 text-sm text-red-500">{{signupForm.email().errors()[0].message}}</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-semibold text-muted-foreground mb-2">Password</label>
+          <div class="relative">
+            <input id="password" [type]="showPassword() ? 'text' : 'password'" [formField]="signupForm.password"
+              class="w-full px-4 py-4 bg-input border border-gray-200 rounded-xl text-foreground placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all duration-200 shadow-sm pr-12"
+              placeholder="Create a strong password" />
+            <button type="button" (click)="togglePasswordVisibility()"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-secondary transition-colors">
+              @if (!showPassword()) {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              }
+              @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+              }
+            </button>
+          </div>
+
+          <!-- Strength Bars -->
+          @if (signupForm.password().value() && signupForm.password().touched()) {
+          <div class="mt-3 flex gap-1 h-1.5 opacity-90">
+            <div class="flex-1 rounded-full transition-colors duration-300"
+              [class.bg-red-500]="passwordStrength() === 'weak'" [class.bg-gray-200]="passwordStrength() !== 'weak'">
+            </div>
+            <div class="flex-1 rounded-full transition-colors duration-300"
+              [class.bg-yellow-500]="passwordStrength() === 'medium'"
+              [class.bg-gray-200]="(passwordStrength() !== 'medium' && passwordStrength() !== 'strong') || passwordStrength() === 'strong'">
+            </div>
+            <div class="flex-1 rounded-full transition-colors duration-300"
+              [class.bg-voyage-green]="passwordStrength() === 'strong'"
+              [class.bg-gray-200]="passwordStrength() !== 'strong'"></div>
+          </div>
+          }
+          @if (signupForm.password().touched() && signupForm.password().errors().length) {
+          <p class="mt-1 text-sm text-red-500">{{signupForm.password().errors()[0].message}}</p>
+          }
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label for="confirmPassword" class="block text-sm font-semibold text-muted-foreground mb-2">Confirm
+            Password</label>
+          <div class="relative">
+            <input id="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'"
+              [formField]="signupForm.confirmPassword"
+              class="w-full px-4 py-4 bg-input border border-gray-200 rounded-xl text-foreground placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all duration-200 shadow-sm pr-12"
+              placeholder="Confirm password" />
+            <button type="button" (click)="toggleConfirmPasswordVisibility()"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-secondary transition-colors">
+              @if (!showConfirmPassword()) {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              }
+              @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+              }
+            </button>
+          </div>
+          @if (signupForm.confirmPassword().touched() && signupForm.confirmPassword().errors().length) {
+          <p class="mt-1 text-sm text-red-500">{{signupForm.confirmPassword().errors()[0].message}}</p>
+          }
+        </div>
+
+        <!-- Terms -->
+        <div class="flex items-start">
+          <input id="agreeToTerms" type="checkbox" [formField]="signupForm.agreeToTerms"
+            class="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" />
+          <label for="agreeToTerms" class="ml-3 text-sm text-muted-foreground">
+            I agree to the <a href="#" class="text-secondary hover:underline font-semibold">Terms</a> & <a href="#"
+              class="text-secondary hover:underline font-semibold">Privacy Policy</a>
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" [disabled]="signupForm().submitting() || signupForm().invalid()"
+          class="w-full py-4 px-6 rounded-xl bg-primary text-white font-bold text-lg hover:bg-[#002244] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed mt-4 group">
+          @if (signupForm().submitting()) { Creating Account... } @else {
+          <span class="flex items-center justify-center gap-2">
+            Create Account
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform"
+              viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                clip-rule="evenodd" />
+            </svg>
+          </span>
+          }
+        </button>
+
+        <!-- Footer -->
+        <p class="text-center text-muted-foreground mt-6">
+          Already have an account?
+          <a routerLink="/auth/signin" class="text-secondary font-bold hover:underline">Sign In</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+<div class="min-h-screen flex flex-col lg:flex-row shadow-[0_0_40px_rgba(0,0,0,0.1)]">
+
+  <!-- Left Side: Branding -->
+  <div
+    class="lg:w-1/2 relative bg-primary overflow-hidden flex flex-col justify-center items-center text-center px-10 py-20 lg:py-0">
+
+    <!-- Background Pattern (Subtle modern geometric) -->
+    <div class="absolute inset-0 opacity-10">
+      <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
+      </svg>
+    </div>
+    <div
+      class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-secondary mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+    </div>
+    <div
+      class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500 mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+    </div>
+
+    <!-- Content -->
+    <div class="relative z-10 max-w-lg">
+      <div class="mb-8">
+        <!-- Logo Icon placeholder -->
+        <div
+          class="w-20 h-20 mx-auto bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 shadow-2xl border border-white/20">
+          <img src="assets/logo-v2-rupee.svg" alt="" srcset="">
+        </div>
+        <h1 class="text-6xl font-sans font-bold tracking-tight mb-2">
+          <span class="text-white">Voyage</span><span class="text-secondary">Ledger</span>
+        </h1>
+        <div class="h-1 w-24 bg-secondary mx-auto rounded-full mt-4"></div>
+      </div>
+
+      <p class="text-blue-100 text-lg font-light leading-relaxed">
+        "Secure your journey. Verify your identity to access your economic dashboard."
+      </p>
+    </div>
+  </div>
+
+  <!-- Right Side: Clean Form Area -->
+  <div class="lg:w-1/2 bg-background flex items-center justify-center p-8 sm:p-12 lg:p-24">
+    <div class="w-full max-w-md text-center">
+
+      <div class="mb-10">
+        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h2 class="text-3xl font-bold text-foreground mb-4">Check your email</h2>
+        <p class="text-muted-foreground mb-2">
+          We've sent a confirmation link to
+        </p>
+        <p class="text-foreground font-semibold text-lg mb-6">{{ email() || 'your email address' }}</p>
+         <p class="text-sm text-muted-foreground">
+          Didn't receive the email? Check your spam folder or try resending.
+        </p>
+      </div>
+
+      <div class="space-y-6">
+        <button (click)="resendEmail()" [disabled]="resending() || countdown() > 0"
+          class="w-full py-4 px-6 rounded-xl bg-primary text-white font-bold text-lg hover:bg-[#002244] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed group">
+          @if (resending()) {
+            <span class="inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                </circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              Sending...
+            </span>
+          } @else if (countdown() > 0) {
+            <span>Resend available in {{ countdown() }}s</span>
+          } @else {
+            <span class="flex items-center justify-center gap-2">
+              Resend Email
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </span>
+          }
+        </button>
+
+        <a routerLink="/auth/signin" class="inline-block text-secondary font-bold hover:underline">
+          Back to Sign In
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>

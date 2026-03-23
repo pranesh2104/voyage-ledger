@@ -1,0 +1,42 @@
+<vl-dialog
+  [isOpen]="dialogService.isOpen()"
+  [title]="dialogService.tripId() ? 'Edit Trip' : 'New Trip'"
+  [subtitle]="dialogService.tripId() ? 'Update your trip details' : 'Add details about your upcoming adventure'"
+  [hasFooter]="true"
+  (closed)="dialogService.close()">
+
+  <!-- Body -->
+  <app-trip-form
+    [tripId]="dialogService.tripId()"
+    [submitTrigger]="submitCount()"
+    (saved)="dialogService.notifySaved()"
+    (cancelled)="dialogService.close()"
+    (validityChanged)="isFormValid.set($event)"
+    (submittingChanged)="isSubmitting.set($event)" />
+
+  <!-- Footer -->
+  <div dialog-footer class="flex items-center justify-end gap-3 px-6 py-4">
+    <button type="button"
+      [disabled]="isSubmitting()"
+      (click)="dialogService.close()"
+      class="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors duration-150 disabled:opacity-50">
+      Cancel
+    </button>
+    <button type="button"
+      [disabled]="!isFormValid() || isSubmitting()"
+      (click)="triggerSubmit()"
+      class="px-5 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary-dark transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+      @if (isSubmitting()) {
+        <span class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          Saving…
+        </span>
+      } @else {
+        {{ dialogService.tripId() ? 'Update Trip' : 'Create Trip' }}
+      }
+    </button>
+  </div>
+
+</vl-dialog>

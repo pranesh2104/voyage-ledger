@@ -1,0 +1,76 @@
+<div class="min-h-screen flex flex-col lg:flex-row shadow-[0_0_40px_rgba(0,0,0,0.1)]">
+
+  <!-- Left Side: Branding -->
+  <div
+    class="lg:w-1/2 relative bg-primary overflow-hidden flex flex-col justify-center items-center text-center px-10 py-20 lg:py-0">
+
+    <div class="absolute inset-0 opacity-10">
+      <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
+      </svg>
+    </div>
+
+    <div class="relative z-10 max-w-lg">
+      <div class="mb-8">
+        <div
+          class="w-20 h-20 mx-auto bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 shadow-2xl border border-white/20">
+          <img src="assets/logo-v2-rupee.svg" alt="" srcset="">
+        </div>
+        <h1 class="text-6xl font-sans font-bold tracking-tight mb-2">
+          <span class="text-white">Voyage</span><span class="text-secondary">Ledger</span>
+        </h1>
+        <div class="h-1 w-24 bg-secondary mx-auto rounded-full mt-4"></div>
+      </div>
+
+      <p class="text-blue-100 text-lg font-light leading-relaxed">
+        "Secure your journey. Verifying your account keeps your data safe."
+      </p>
+    </div>
+  </div>
+
+  <!-- Right Side: Verification Area -->
+  <div class="lg:w-1/2 bg-background flex items-center justify-center p-8 sm:p-12 lg:p-24">
+    <div class="w-full max-w-md text-center">
+
+      <div class="mb-10">
+        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          @if (verifying()) {
+            <svg xmlns="http://www.w3.org/2000/svg" class="animate-spin h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          }
+        </div>
+
+        <h2 class="text-3xl font-bold text-foreground mb-4">@if (verifying()) { Verifying your email... } @else { Verification result }</h2>
+
+        @if (verifying()) {
+          <p class="text-muted-foreground mb-2">Please wait while we verify your token. This may take a moment.</p>
+        } @else if (error()) {
+          <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700">
+            <p class="font-semibold">Verification failed</p>
+            <p class="text-sm mt-1">{{ error() }}</p>
+          </div>
+
+          <div class="space-y-4">
+            <button (click)="resendEmail()" [disabled]="resending()"
+              class="w-full inline-flex items-center justify-center py-3 px-6 rounded-xl bg-primary text-white font-bold text-lg hover:bg-[#002244] hover:shadow-lg transition-all duration-200">
+              Resend verification email
+            </button>
+
+            <a routerLink="/auth/signin" class="inline-block text-secondary font-bold hover:underline">Back to Sign In</a>
+          </div>
+
+        } @else {
+          <p class="text-foreground mb-4">Your account was verified successfully. Redirecting to your dashboard...</p>
+        }
+
+      </div>
+
+    </div>
+  </div>
+</div>

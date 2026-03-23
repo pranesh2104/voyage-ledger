@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+@import 'https://fonts.googleapis.com/css?family=Inter';
+
+/* Configure Tailwind theme directly in CSS */
+@theme {
+  /* Custom colors */
+  --color-primary: hsl(215 80% 25%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-primary-light: hsl(215 70% 35%);
+  --color-primary-dark: hsl(215 90% 15%);
+
+  --color-secondary: hsl(15 90% 55%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+  --color-secondary-light: hsl(15 80% 65%);
+  --color-secondary-dark: hsl(15 100% 45%);
+
+  --color-accent: hsl(150 60% 35%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-accent-light: hsl(150 50% 45%);
+  --color-accent-dark: hsl(150 70% 25%);
+
+  --color-destructive: hsl(0 70% 50%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-muted: hsl(210 10% 95%);
+  --color-muted-foreground: hsl(210 10% 50%);
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(210 15% 20%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(210 15% 20%);
+
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(210 15% 20%);
+
+  --color-border: hsl(210 15% 85%);
+  --color-input: hsl(210 15% 92%);
+  --color-ring: hsl(215 80% 25%);
+
+  /* Voyage brand colors */
+  --color-voyage-navy: #003366;
+  --color-voyage-coral: #ff6347;
+  --color-voyage-green: #228b22;
+  --color-voyage-gray: #f5f5f5;
+
+  /* Font family */
+  --font-family-sans: 'Inter', sans-serif;
+
+  /* Border radius */
+  --radius: 0.5rem;
+}
+
+/* Sidebar active nav item — applied by routerLinkActive */
+.sidebar-nav-active {
+  @apply bg-primary/10 text-primary font-medium;
+}
+
+/* Dark mode overrides */
+@layer base {
+  .dark {
+    --color-background: hsl(215 25% 12%);
+    --color-foreground: hsl(210 20% 95%);
+
+    --color-primary: hsl(210 65% 55%);
+    --color-primary-foreground: hsl(215 25% 12%);
+    --color-primary-light: hsl(210 55% 65%);
+    --color-primary-dark: hsl(210 75% 45%);
+
+    --color-secondary: hsl(25 75% 55%);
+    --color-secondary-foreground: hsl(215 25% 12%);
+    --color-secondary-light: hsl(25 65% 65%);
+    --color-secondary-dark: hsl(25 85% 45%);
+
+    --color-accent: hsl(155 40% 50%);
+    --color-accent-foreground: hsl(215 25% 12%);
+    --color-accent-light: hsl(155 30% 60%);
+    --color-accent-dark: hsl(155 50% 40%);
+
+    --color-muted: hsl(215 20% 20%);
+    --color-muted-foreground: hsl(210 15% 65%);
+
+    --color-destructive: hsl(0 65% 50%);
+    --color-destructive-foreground: hsl(210 20% 95%);
+
+    --color-card: hsl(215 25% 16%);
+    --color-card-foreground: hsl(210 20% 95%);
+
+    --color-popover: hsl(215 25% 16%);
+    --color-popover-foreground: hsl(210 20% 95%);
+
+    --color-border: hsl(215 20% 25%);
+    --color-input: hsl(215 20% 22%);
+    --color-ring: hsl(210 65% 55%);
+  }
+}
