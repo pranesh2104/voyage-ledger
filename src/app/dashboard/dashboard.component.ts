@@ -1,29 +1,28 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Trip, TripService, formatCurrency, getCurrency } from 'voyage-lib';
+import { Trip, TripService, formatCurrency, getCurrency, LoaderComponent } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
-
-interface OverviewStats {
-  activeTrips: number;
-  totalBudget: number;
-  totalSpent: number;
-}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoaderComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  trips: Trip[] = [];
-  stats: OverviewStats = {
-    activeTrips: 0,
-    totalBudget: 0,
-    totalSpent: 0
-  };
+  trips = signal<Trip[]>([]);
+  stats = computed(() => {
+    const trips = this.trips();
+    return {
+      activeTrips: trips.filter(t => t.status === 'ongoing' || t.status === 'planning').length,
+      totalBudget: trips.reduce((sum, t) => sum + t.budget, 0),
+      totalSpent: trips.reduce((sum, t) => sum + t.spent, 0)
+    };
+  });
+
+  isLoading = signal(true);
 
   private readonly tripService = inject(TripService);
   private readonly router = inject(Router);
@@ -40,20 +39,16 @@ export class DashboardComponent implements OnInit {
   }
 
   loadTrips(): void {
-    this.tripService.getAllTrips().subscribe(trips => {
-      console.log({ trips });
-
-      this.trips = trips;
-      this.calculateStats();
+    this.isLoading.set(true);
+    this.tripService.getAllTrips().subscribe({
+      next: (trips) => {
+        this.trips.set(trips);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      },
     });
-  }
-
-  calculateStats(): void {
-    this.stats = {
-      activeTrips: this.trips.filter(t => t.status === 'ongoing' || t.status === 'planning').length,
-      totalBudget: this.trips.reduce((sum, t) => sum + t.budget, 0),
-      totalSpent: this.trips.reduce((sum, t) => sum + t.spent, 0)
-    };
   }
 
   viewExpenses(tripId: string): void {

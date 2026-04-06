@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Trip, TripDTO, TripService, SharedHttpService } from 'voyage-lib';
 
@@ -8,37 +8,26 @@ import { Trip, TripDTO, TripService, SharedHttpService } from 'voyage-lib';
 })
 export class TripManagementService {
   private readonly httpService = inject(SharedHttpService);
-  private readonly USE_MOCK_DATA = true;
   private readonly tripService = inject(TripService);
 
-  constructor() { }
-
   createTrip(trip: Omit<Trip, 'id'>): Observable<Trip> {
-    if (this.USE_MOCK_DATA) {
-      const newTrip: Trip = { ...trip, id: Date.now().toString() };
-      return of(newTrip);
-    }
     const dto = this.tripToDTO(trip as Trip);
-    return this.httpService.post<TripDTO>('/trips', dto).pipe(
-      map(dto => this.dtoToTrip(dto))
+    return this.httpService.post<{ data: TripDTO }>('/trips', dto).pipe(
+      map(res => this.dtoToTrip(res.data))
     );
   }
 
   updateTrip(trip: Trip): Observable<Trip> {
-    if (this.USE_MOCK_DATA) {
-      return of(trip);
-    }
     const dto = this.tripToDTO(trip);
-    return this.httpService.put<TripDTO>(`/trips/${trip.id}`, dto).pipe(
-      map(dto => this.dtoToTrip(dto))
+    return this.httpService.put<{ data: TripDTO }>(`/trips/${trip.id}`, dto).pipe(
+      map(res => this.dtoToTrip(res.data))
     );
   }
 
   deleteTrip(tripId: string): Observable<void> {
-    if (this.USE_MOCK_DATA) {
-      return of(undefined);
-    }
-    return this.httpService.delete<void>(`/trips/${tripId}`);
+    return this.httpService.delete<{ data: null }>(`/trips/${tripId}`).pipe(
+      map(() => undefined)
+    );
   }
 
   private dtoToTrip(dto: TripDTO): Trip {

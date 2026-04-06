@@ -45,6 +45,19 @@ export class TripFormComponent implements OnInit {
     effect(() => {
       if (this.submitTrigger() > 0) this.onSubmit();
     });
+
+    // React to tripId changes (edit mode).
+    effect(() => {
+      const id = this.tripId();
+      if (this.tripForm) {
+        this.tripForm.reset({
+          name: '', destination: '', country: '',
+          startDate: '', endDate: '',
+          budget: '', currency: 'USD', status: 'planning',
+        });
+        if (id) this.loadTrip();
+      }
+    });
   }
 
   get isEditMode(): boolean { return !!this.tripId(); }
@@ -56,8 +69,6 @@ export class TripFormComponent implements OnInit {
     this.tripForm.statusChanges
       .pipe(startWith(this.tripForm.status), takeUntilDestroyed(this.destroyRef))
       .subscribe((status) => this.validityChanged.emit(status === 'VALID'));
-
-    if (this.isEditMode) this.loadTrip();
   }
 
   initForm(): void {
