@@ -2,8 +2,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 * * 1,4'   # Runs at 00:00 UTC every Monday and Thursday
-  workflow_dispatch:        # Allows you to run it manually
+    - cron: '0 0 * * 1,4'   # Monday and Thursday at 00:00 UTC
+  workflow_dispatch:        # Allows manual run
 
 jobs:
   ping:
@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Keep Supabase project awake
         run: |
-            curl -I -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/trips?select=id&limit=1" \
+          echo "🔍 Pinging Supabase..."
+          response=$(curl -s -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/users?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          
+          echo "📊 Response from Supabase:"
+          echo "$response"
