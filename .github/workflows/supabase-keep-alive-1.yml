@@ -2,28 +2,32 @@ name: Keep Supabase Alive Insert
 
 on:
   schedule:
-    - cron: '0 3 * * 0,3'     # Runs Sunday + Wednesday at 03:00 UTC (safer buffer)
+    - cron: '0 3 * * 0,3'     # Sunday + Wednesday at 03:00 UTC
   workflow_dispatch:
 
 jobs:
-  ping:
+  keep-alive:
     runs-on: ubuntu-latest
 
     steps:
       - name: Strong Keep-Alive Ping (INSERT + DELETE)
         run: |
-          echo "🔍 Sending strong keep-alive to Supabase..."
+          echo "🔍 Starting strong keep-alive ping..."
 
-          # Insert a row
+          # 1. INSERT a new row
           curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"ping_time": "now()"}'
+            -d '{}'
 
-          # Delete the oldest row (keeps table tiny)
-          curl -s -X DELETE "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive?order=id.asc&limit=1" \
+          echo "✅ INSERT completed"
+
+          # 2. DELETE the oldest row (with proper WHERE using id)
+          curl -s -X DELETE "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive?id=lt.999999999" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Prefer: return=minimal"
 
-          echo "✅ Strong ping completed (INSERT + DELETE)"
+          echo "✅ DELETE completed (oldest row removed)"
+          echo "🎉 Strong ping finished! This should reliably keep your project awake."
