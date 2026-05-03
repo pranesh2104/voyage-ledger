@@ -1,0 +1,25 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 3 * * 0,3'     # Sunday + Wednesday at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simple Keep-Alive Ping (INSERT only)
+        run: |
+          echo "🔍 Sending keep-alive ping to Supabase..."
+
+          curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -w "\nHTTP Status: %{http_code}\n"
+
+          echo "✅ INSERT completed - Strong ping sent!"
+          echo "🎉 This should help keep your project from pausing."
