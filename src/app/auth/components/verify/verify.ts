@@ -38,12 +38,6 @@ export class Verify implements OnInit, OnDestroy {
         this.subscription.add(this.authService.verifyOtp(tokenHash, type).subscribe({
           next: (response:any) => {
             console.log({ response });
-
-            // Save access_token to cookie if it exists in response
-            if (response?.['data'].session.access_token) {
-              this.setCookie('access_token', response?.['data'].session.access_token, 7); // 7 days expiry
-            }
-
             this.verifying.set(false);
             this.error.set(null);
             setTimeout(() => {
@@ -87,12 +81,4 @@ export class Verify implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  /**
-   * Helper method to set cookie
-   */
-  private setCookie(name: string, value: string, days: number): void {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
-  }
 }

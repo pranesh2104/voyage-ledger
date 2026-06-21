@@ -1,6 +1,7 @@
-import { inject, Injectable } from '@angular/core';
-import { SharedHttpService } from 'voyage-lib';
+import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { ApiResponse, SharedHttpService } from 'voyage-lib';
 import { Observable } from 'rxjs/internal/Observable';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -8,36 +9,49 @@ import { Observable } from 'rxjs/internal/Observable';
 export class AuthService {
   private httpService = inject(SharedHttpService);
 
-  signUp(username: string, email: string, password: string): Observable<any> {
+  currentuser: WritableSignal<User | null> = signal(null);
+
+  setCurrentUser(user: User | null) {
+    this.currentuser.set(user);
+  }
+
+  signUp(username: string, email: string, password: string): Observable<ApiResponse<{ user: User }>> {
     const body = { username, email, password };
-    return this.httpService.post('/auth/signup', body);
+    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/signup', body);
   }
 
-  login(email: string, password: string) {
+  login(email: string, password: string): Observable<ApiResponse<{ user: User }>> {
     const body = { email, password };
-    return this.httpService.post('/auth/login', body);
+    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/login', body);
   }
 
-  resend(email: string) {
+  resend(email: string): Observable<ApiResponse> {
     const body = { email };
-    return this.httpService.post('/auth/resend', body);
+    return this.httpService.post<ApiResponse>('/auth/resend', body);
   }
 
-  logout() {
-    return this.httpService.post('/auth/logout', {});
+  logout(): Observable<ApiResponse> {
+    return this.httpService.post<ApiResponse>('/auth/logout', {});
   }
 
-  getCurrentUser() {
-    return this.httpService.get<{ username: string; email: string }>('/auth/user');
+  getCurrentUser(): Observable<ApiResponse<{ user: User }>> {
+    return this.httpService.get<ApiResponse<{ user: User }>>('/auth/user');
   }
 
-  verifyOtp(token_hash: string, type: string) {
+  verifyOtp(token_hash: string, type: string): Observable<ApiResponse<{ user: User }>> {
     const body = { token_hash, type };
-    return this.httpService.post('/auth/verify-otp', body);
+    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/verify-otp', body);
   }
 
-  setSession(accessToken: string, refreshToken: string) {
+  // No longer needed — session is set server-side during login and OTP verification
+  setSession(accessToken: string, refreshToken: string): Observable<ApiResponse> {
     const body = { accessToken, refreshToken };
-    return this.httpService.post('/auth/setsession', body);
+    return this.httpService.post<ApiResponse>('/auth/setsession', body);
+  }
+
+  // No longer needed — token refresh is handled server-side by auth middleware
+  refreshToken(refreshToken: string): Observable<ApiResponse> {
+    const body = { refresh_token: refreshToken };
+    return this.httpService.post<ApiResponse>('/auth/refresh', body);
   }
 }

@@ -7,14 +7,12 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Check if user is authenticated by calling getCurrentUser
   return authService.getCurrentUser().pipe(
-    map(() => {
-      // If getCurrentUser succeeds, user is authenticated
+    map((response) => {
+      authService.setCurrentUser(response.data.user);
       return true;
     }),
     catchError(() => {
-      // If getCurrentUser fails, redirect to signin
       router.navigate(['/auth/signin'], {
         queryParams: { returnUrl: state.url }
       });
