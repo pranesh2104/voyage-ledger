@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
-
+import { Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { email, form, required, submit } from '@angular/forms/signals';
+import { AuthService } from '../../services/auth';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
 	selector: 'app-forgot-password',
@@ -10,6 +11,8 @@ import { email, form, required, submit } from '@angular/forms/signals';
 	templateUrl: './forgot-password.html',
 })
 export class ForgotPassword {
+
+	private authService = inject(AuthService);
 
 	forgotPasswordModel = signal({ email: '' });
 
@@ -23,11 +26,17 @@ export class ForgotPassword {
 	onSubmit(event: Event) {
 		event.preventDefault();
 		submit(this.forgotPasswordForm, async (form) => {
-			console.log('Form submitted:', form);
-			await new Promise((resolve) => setTimeout(resolve, 1500));
-			alert('Forgot password successful! (This is a demo)');
-			this.isSent.set(true);
-			return undefined;
+			try {
+				await lastValueFrom(this.authService.forgotPassword(form.email().value()));
+				this.isSent.set(true);
+				return undefined;
+			} catch (error: any) {
+				return [{
+					kind: 'server',
+					fieldTree: this.forgotPasswordForm,
+					message: error?.error?.message || 'Failed to send reset email. Please try again.',
+				}];
+			}
 		});
 	}
 }

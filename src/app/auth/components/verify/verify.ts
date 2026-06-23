@@ -35,13 +35,16 @@ export class Verify implements OnInit, OnDestroy {
       const tokenHash = params['token_hash'];
       const type = params['type'];
       if (tokenHash && type) {
-        this.subscription.add(this.authService.verifyOtp(tokenHash, type).subscribe({
-          next: (response:any) => {
-            console.log({ response });
+        this.subscription.add(this.authService.verifyToken(tokenHash, type).subscribe({
+          next: (_: any) => {
             this.verifying.set(false);
             this.error.set(null);
             setTimeout(() => {
-              this.router.navigate(['/dashboard']);
+              if (type === 'recovery') {
+                this.router.navigate(['/auth/reset-password']);
+              } else {
+                this.router.navigate(['/dashboard']);
+              }
             }, 2000);
           },
           error: (err) => {

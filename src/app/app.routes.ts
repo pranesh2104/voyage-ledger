@@ -65,6 +65,12 @@ export const appRoutes: Route[] = [
         data: { title: 'Verify' },
     },
     {
+        path: 'auth/reset-password',
+        loadComponent: () =>
+            import('./auth/components/reset-password/reset-password').then((m) => m.ResetPassword),
+        data: { title: 'Reset Password' },
+    },
+    {
         path: '**',
         loadComponent: () =>
             import('./not-found/not-found.component').then((m) => m.NotFoundComponent),

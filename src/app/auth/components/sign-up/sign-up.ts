@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { email, form, minLength, pattern, required, submit, validate, FormField } from '@angular/forms/signals';
 import { AuthService } from '../../services/auth';
 import { lastValueFrom } from 'rxjs';
+import { PASSWORD_PATTERN } from '../../constants/auth.constant';
 
 @Component({
   selector: 'app-sign-up',
@@ -40,10 +41,10 @@ export class SignUp implements OnInit {
     email(signUpform.email, { message: 'Please enter a valid email address' });
     required(signUpform.password, { message: 'Password is required' });
     minLength(signUpform.password, 8, { message: 'Password must be at least 8 characters long' });
-    pattern(signUpform.password, /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}/, { message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
+    pattern(signUpform.password, PASSWORD_PATTERN, { message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
     required(signUpform.confirmPassword, { message: 'Confirm password is required' });
     minLength(signUpform.confirmPassword, 8, { message: 'Confirm password must be at least 8 characters long' });
-    pattern(signUpform.confirmPassword, /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}/, { message: 'Confirm password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
+    pattern(signUpform.confirmPassword, PASSWORD_PATTERN, { message: 'Confirm password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' });
     required(signUpform.agreeToTerms, { message: 'You must agree to the terms and conditions' });
     validate(signUpform.confirmPassword, ({ value, valueOf }) => {
       if (value() !== valueOf(signUpform.password)) {
