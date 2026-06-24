@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { form, required, minLength, email, pattern, FormField, submit } from '@angular/forms/signals';
 import { AuthService } from '../../services/auth';
 import { lastValueFrom } from 'rxjs';
-import { ErrorInterface } from 'voyage-lib';
+import { ErrorInterface, SnackbarService } from 'voyage-lib';
 import { PASSWORD_PATTERN } from '../../constants/auth.constant';
 @Component({
   selector: 'app-sign-in',
@@ -37,8 +37,8 @@ export class SignIn {
   });
 
   private authService = inject(AuthService);
-
   private router = inject(Router);
+  private snackbarService = inject(SnackbarService);
   /**
    * Toggle password visibility
    */
@@ -56,9 +56,11 @@ export class SignIn {
         this.authService.setCurrentUser(result.data.user);
       } catch (error: unknown) {
         const err = ((error as any).error) as ErrorInterface;
-        console.error('Login failed', error);
         if (err.code === 'EMAIL_NOT_CONFIRMED') {
+          this.snackbarService.warning('Please verify your email before signing in.', { duration: 4000 });
           this.router.navigate(['/auth/confirm-email'], { queryParams: { email: form.email().value() } });
+        } else {
+          this.snackbarService.error(err.message || 'Sign in failed. Please check your credentials.', { duration: 4000 });
         }
         return;
       }

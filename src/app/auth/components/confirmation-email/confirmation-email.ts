@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { lastValueFrom, Subscription } from 'rxjs';
+import { SnackbarService } from 'voyage-lib';
 
 @Component({
   selector: 'app-confirmation-email',
@@ -17,7 +18,8 @@ export class ConfirmationEmail implements OnInit, OnDestroy {
 
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
-  private router = inject(Router)
+  private router = inject(Router);
+  private snackbarService = inject(SnackbarService);
   private countdownInterval?: ReturnType<typeof setInterval>;
   private subscription = new Subscription();
 
@@ -46,10 +48,10 @@ export class ConfirmationEmail implements OnInit, OnDestroy {
 
     try {
       await lastValueFrom(this.authService.resend(this.email()));
-      console.log('Email resent successfully');
+      this.snackbarService.success('Verification email sent! Please check your inbox.', { duration: 4000 });
       this.startCountdown();
     } catch (error) {
-      console.error('Failed to resend email', error);
+      this.snackbarService.error('Failed to resend verification email. Please try again.', { duration: 4000 });
     } finally {
       this.resending.set(false);
     }

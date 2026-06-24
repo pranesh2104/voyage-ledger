@@ -3,6 +3,7 @@ import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { AuthService } from "../../services/auth";
 import { lastValueFrom, Subscription } from "rxjs";
+import { SnackbarService } from "voyage-lib";
 
 @Component({
   selector: 'app-verify',
@@ -20,6 +21,7 @@ export class Verify implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private snackbarService = inject(SnackbarService);
 
 
   private subscription = new Subscription();
@@ -39,6 +41,7 @@ export class Verify implements OnInit, OnDestroy {
           next: (_: any) => {
             this.verifying.set(false);
             this.error.set(null);
+            this.snackbarService.success('Verification successful! Redirecting...', { duration: 3000 });
             setTimeout(() => {
               if (type === 'recovery') {
                 this.router.navigate(['/auth/reset-password']);
@@ -51,8 +54,10 @@ export class Verify implements OnInit, OnDestroy {
             this.verifying.set(false);
             if (err?.error?.code === 'OTP_EXPIRED') {
               this.error.set('The verification link has expired. Please request a new verification email.');
+              this.snackbarService.error('Verification link expired. Please request a new one.', { duration: 5000 });
             } else {
               this.error.set('Verification failed. Please try again.');
+              this.snackbarService.error('Verification failed. Please try again.', { duration: 4000 });
               setTimeout(() => {
                 this.router.navigate(['/auth/signin']);
               }, 3000);
@@ -70,11 +75,12 @@ export class Verify implements OnInit, OnDestroy {
 
     try {
       await lastValueFrom(this.authService.resend(this.email()));
+      this.snackbarService.success('Verification email sent! Please check your inbox.', { duration: 4000 });
       setTimeout(() => {
         this.router.navigate(['/auth/signin']);
       }, 3000);
     } catch (error) {
-      console.error('Failed to resend email', error);
+      this.snackbarService.error('Failed to resend verification email. Please try again.', { duration: 4000 });
     } finally {
       this.resending.set(false);
     }

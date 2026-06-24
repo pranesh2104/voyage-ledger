@@ -4,6 +4,7 @@ import { form, minLength, pattern, required, submit, validate, FormField } from 
 import { AuthService } from '../../services/auth';
 import { lastValueFrom } from 'rxjs';
 import { PASSWORD_PATTERN } from '../../constants/auth.constant';
+import { SnackbarService } from 'voyage-lib';
 
 @Component({
   selector: 'app-reset-password',
@@ -15,6 +16,7 @@ export class ResetPassword {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private snackbarService = inject(SnackbarService);
 
   showPassword = signal(false);
   showConfirmPassword = signal(false);
@@ -63,9 +65,11 @@ export class ResetPassword {
       try {
         await lastValueFrom(this.authService.resetPassword(f.password().value()));
         this.isSuccess.set(true);
+        this.snackbarService.success('Password reset successfully! Redirecting to sign in...', { duration: 3000 });
         setTimeout(() => this.router.navigate(['/auth/signin']), 2500);
         return undefined;
       } catch (error: any) {
+        this.snackbarService.error(error?.error?.message || 'Failed to reset password. Please try again.', { duration: 4000 });
         return [{
           kind: 'server',
           fieldTree: this.resetPasswordForm,

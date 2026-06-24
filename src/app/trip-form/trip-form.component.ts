@@ -2,7 +2,7 @@ import { Component, DestroyRef, effect, inject, input, OnInit, output } from '@a
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { startWith } from 'rxjs';
-import { TripService, CURRENCIES } from 'voyage-lib';
+import { TripService, CURRENCIES, SnackbarService } from 'voyage-lib';
 import { TripManagementService } from '../services/trip-management.service';
 
 @Component({
@@ -35,10 +35,11 @@ export class TripFormComponent implements OnInit {
     { value: 'completed', label: 'Completed' },
   ];
 
-  private readonly fb                  = inject(FormBuilder);
-  private readonly tripService         = inject(TripService);
+  private readonly fb                    = inject(FormBuilder);
+  private readonly tripService           = inject(TripService);
   private readonly tripManagementService = inject(TripManagementService);
-  private readonly destroyRef          = inject(DestroyRef);
+  private readonly destroyRef            = inject(DestroyRef);
+  private readonly snackbarService       = inject(SnackbarService);
 
   constructor() {
     // Fire onSubmit whenever the parent increments submitTrigger.
@@ -147,15 +148,15 @@ export class TripFormComponent implements OnInit {
       this.tripService.getTripById(id).subscribe({
         next: (existing) => {
           this.tripManagementService.updateTrip({ ...tripData, id, spent: existing?.spent ?? 0 }).subscribe({
-            next:  () => { finish(); this.saved.emit(); },
-            error: (e) => { console.error(e); finish(); },
+            next:  () => { finish(); this.snackbarService.success('Trip updated successfully.', { duration: 3000 }); this.saved.emit(); },
+            error: () => { this.snackbarService.error('Failed to update trip. Please try again.', { duration: 4000 }); finish(); },
           });
         },
       });
     } else {
       this.tripManagementService.createTrip(tripData).subscribe({
-        next:  () => { finish(); this.saved.emit(); },
-        error: (e) => { console.error(e); finish(); },
+        next:  () => { finish(); this.snackbarService.success('Trip created successfully.', { duration: 3000 }); this.saved.emit(); },
+        error: () => { this.snackbarService.error('Failed to create trip. Please try again.', { duration: 4000 }); finish(); },
       });
     }
   }

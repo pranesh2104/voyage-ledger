@@ -5,6 +5,7 @@ import { email, form, minLength, pattern, required, submit, validate, FormField 
 import { AuthService } from '../../services/auth';
 import { lastValueFrom } from 'rxjs';
 import { PASSWORD_PATTERN } from '../../constants/auth.constant';
+import { SnackbarService } from 'voyage-lib';
 
 @Component({
   selector: 'app-sign-up',
@@ -75,8 +76,8 @@ export class SignUp implements OnInit {
   });
 
   private authService = inject(AuthService);
-
   private router = inject(Router);
+  private snackbarService = inject(SnackbarService);
 
   ngOnInit(): void {
     console.log();
@@ -100,22 +101,23 @@ export class SignUp implements OnInit {
     event.preventDefault();
     const response = await submit(this.signupForm, async (form) => {
       try {
-        const result = await lastValueFrom(this.authService.signUp(
+        await lastValueFrom(this.authService.signUp(
           form.fullName().value(),
           form.email().value(),
           form.password().value()
         ));
-        console.log({ result });
+        this.snackbarService.success('Account created! Please check your email to verify your account.', { duration: 5000 });
         return undefined;
       } catch (error: any) {
-        console.error('Sign up failed', error);
         if (error.error.code === 'EMAIL_EXISTS') {
+          this.snackbarService.error('This email is already registered.', { duration: 4000 });
           return [{
             kind: 'server',
             fieldTree: form.email,
             message: 'This email is already registered',
           }];
         }
+        this.snackbarService.error(error.error.message || 'Sign up failed. Please try again.', { duration: 4000 });
         return [{
           kind: 'server',
           fieldTree: form,

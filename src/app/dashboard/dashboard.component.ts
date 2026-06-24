@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Trip, TripService, formatCurrency, getCurrency, LoaderComponent } from 'voyage-lib';
+import { Trip, TripService, formatCurrency, getCurrency, LoaderComponent, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
 
 @Component({
@@ -27,6 +27,7 @@ export class DashboardComponent implements OnInit {
   private readonly tripService = inject(TripService);
   private readonly router = inject(Router);
   private readonly tripDialogService = inject(TripDialogService);
+  private readonly snackbarService = inject(SnackbarService);
 
   constructor() {
     effect(() => {
@@ -47,6 +48,7 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.isLoading.set(false);
+        this.snackbarService.error('Failed to load trips. Please refresh the page.', { duration: 5000 });
       },
     });
   }
