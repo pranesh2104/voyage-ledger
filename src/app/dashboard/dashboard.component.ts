@@ -1,15 +1,16 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Trip, TripService, formatCurrency, getCurrency, LoaderComponent, SnackbarService } from 'voyage-lib';
+import { Trip, TripService, formatCurrency, getCurrency, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, LoaderComponent],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class DashboardComponent implements OnInit {
   trips = signal<Trip[]>([]);
