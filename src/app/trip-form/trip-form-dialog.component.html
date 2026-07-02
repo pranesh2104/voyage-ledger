@@ -1,11 +1,6 @@
-<vl-dialog
-  [isOpen]="dialogService.isOpen()"
-  [title]="dialogService.tripId() ? 'Edit Trip' : 'New Trip'"
-  [subtitle]="dialogService.tripId() ? 'Update your trip details' : 'Add details about your upcoming adventure'"
-  [hasFooter]="true"
-  (closed)="dialogService.close()">
+<ng-container #contentAnchor></ng-container>
 
-  <!-- Body -->
+<ng-template #bodyTpl>
   <app-trip-form
     [tripId]="dialogService.tripId()"
     [submitTrigger]="submitCount()"
@@ -13,8 +8,9 @@
     (cancelled)="dialogService.close()"
     (validityChanged)="isFormValid.set($event)"
     (submittingChanged)="isSubmitting.set($event)" />
+</ng-template>
 
-  <!-- Footer -->
+<ng-template #footerTpl>
   <div dialog-footer class="flex items-center justify-end gap-3 px-6 py-4">
     <button type="button"
       [disabled]="isSubmitting()"
@@ -38,5 +34,10 @@
       }
     </button>
   </div>
+</ng-template>
 
-</vl-dialog>
+<app-remote-outlet
+  [component]="dialogComponent()"
+  [inputs]="dialogInputs()"
+  [content]="dialogContent()"
+  [outputBindings]="dialogOutputBindings" />

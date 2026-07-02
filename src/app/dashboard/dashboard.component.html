@@ -1,5 +1,5 @@
 @if (isLoading()) {
-  <vl-loader message="Loading dashboard..." [fullPage]="true" />
+  <app-remote-outlet [component]="loaderComponent()" [inputs]="loaderInputs" />
 } @else {
 <div class="p-6 md:p-8 max-w-6xl mx-auto">
 

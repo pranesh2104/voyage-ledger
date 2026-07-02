@@ -3,6 +3,9 @@ import { withNativeFederation, shareAll } from '@angular-architects/native-feder
 export default withNativeFederation({
   name: 'voyage-ledger',
 
+  remotes: {
+    'voyage-ui': 'http://localhost:4202/remoteEntry.json',
+  },
 
   shared: {
     ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),

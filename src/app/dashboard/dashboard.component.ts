@@ -1,25 +1,31 @@
-import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, Type } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Trip, TripService, formatCurrency, getCurrency, SnackbarService } from 'voyage-lib';
+import { Trip, TripService, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
+import type { LoaderComponent } from 'voyage-ui/ui';
+import { RemoteOutletComponent } from '../shared/components/remote-outlet/remote-outlet.component';
+import { RemoteUiService } from '../shared/services/remote-ui.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RemoteOutletComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class DashboardComponent implements OnInit {
+  private readonly remoteUi = inject(RemoteUiService);
+  readonly loaderComponent = signal<Type<LoaderComponent> | null>(null);
+  readonly loaderInputs = { message: 'Loading dashboard...', fullPage: true };
+
   trips = signal<Trip[]>([]);
   stats = computed(() => {
     const trips = this.trips();
     return {
       activeTrips: trips.filter(t => t.status === 'ongoing' || t.status === 'planning').length,
       totalBudget: trips.reduce((sum, t) => sum + t.budget, 0),
-      totalSpent: trips.reduce((sum, t) => sum + t.spent, 0)
+      totalSpent: trips.reduce((sum, t) => sum + t.spent, 0),
     };
   });
 
@@ -31,6 +37,7 @@ export class DashboardComponent implements OnInit {
   private readonly snackbarService = inject(SnackbarService);
 
   constructor() {
+    this.remoteUi.load().then((m) => this.loaderComponent.set(m.LoaderComponent));
     effect(() => {
       if (this.tripDialogService.savedCount() > 0) this.loadTrips();
     });
@@ -66,47 +73,11 @@ export class DashboardComponent implements OnInit {
     this.tripDialogService.openCreate();
   }
 
-  formatCurrencyAmount(amount: number, currencyCode: string): string {
-    return formatCurrency(amount, currencyCode);
-  }
-
-  getCurrencySymbol(currencyCode: string): string {
-    const currency = getCurrency(currencyCode);
-    return currency?.symbol || '$';
-  }
-
   getBudgetPercentage(trip: Trip): number {
-    return trip.budget > 0 ? Math.round((trip.spent / trip.budget) * 100) : 0;
+    return trip.budget > 0 ? Math.min(Math.round((trip.spent / trip.budget) * 100), 100) : 0;
   }
 
   getRemainingAmount(trip: Trip): number {
     return trip.budget - trip.spent;
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'ongoing': return '#228b22';
-      case 'planning': return '#ff6347';
-      case 'completed': return '#6b7280';
-      default: return '#6b7280';
-    }
-  }
-
-  getStatusBg(status: string): string {
-    switch (status) {
-      case 'ongoing': return 'rgba(34, 139, 34, 0.12)';
-      case 'planning': return 'rgba(255, 99, 71, 0.12)';
-      case 'completed': return 'rgba(107, 114, 128, 0.12)';
-      default: return 'rgba(107, 114, 128, 0.12)';
-    }
-  }
-
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  getDurationDays(trip: Trip): number {
-    const diffTime = Math.abs(trip.endDate.getTime() - trip.startDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }
