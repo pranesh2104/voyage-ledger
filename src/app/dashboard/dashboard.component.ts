@@ -1,16 +1,15 @@
-import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Trip, TripService, formatCurrency, getCurrency, SnackbarService } from 'voyage-lib';
+import { CurrencyFormatPipe, DateFormatPipe, LoaderComponent, Trip, TripDurationPipe, TripService, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoaderComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class DashboardComponent implements OnInit {
   trips = signal<Trip[]>([]);
@@ -66,15 +65,6 @@ export class DashboardComponent implements OnInit {
     this.tripDialogService.openCreate();
   }
 
-  formatCurrencyAmount(amount: number, currencyCode: string): string {
-    return formatCurrency(amount, currencyCode);
-  }
-
-  getCurrencySymbol(currencyCode: string): string {
-    const currency = getCurrency(currencyCode);
-    return currency?.symbol || '$';
-  }
-
   getBudgetPercentage(trip: Trip): number {
     return trip.budget > 0 ? Math.round((trip.spent / trip.budget) * 100) : 0;
   }
@@ -99,14 +89,5 @@ export class DashboardComponent implements OnInit {
       case 'completed': return 'rgba(107, 114, 128, 0.12)';
       default: return 'rgba(107, 114, 128, 0.12)';
     }
-  }
-
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  getDurationDays(trip: Trip): number {
-    const diffTime = Math.abs(trip.endDate.getTime() - trip.startDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }

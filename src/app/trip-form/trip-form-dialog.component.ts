@@ -1,13 +1,13 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { DialogComponent } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
 import { TripFormComponent } from './trip-form.component';
 
 @Component({
   selector: 'app-trip-form-dialog',
   standalone: true,
-  imports: [TripFormComponent],
+  imports: [TripFormComponent, DialogComponent],
   templateUrl: './trip-form-dialog.component.html',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class TripFormDialogComponent {
   readonly dialogService = inject(TripDialogService);
