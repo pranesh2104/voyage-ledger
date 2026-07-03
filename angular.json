@@ -60,6 +60,16 @@
 					},
 					"configurations": {
 						"production": {
+							"assets": [
+								{
+									"glob": "**/*",
+									"input": "public"
+								},
+								{
+									"glob": "federation.manifest.json",
+									"input": "public-prod"
+								}
+							],
 							"budgets": [
 								{
 									"type": "initial",
