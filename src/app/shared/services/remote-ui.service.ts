@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { loadRemoteModule } from '@angular-architects/native-federation';
-import type * as VoyageUi from 'voyage-ui/ui';
+import type * as VoyageUi from 'voyage-ui';
 
 @Injectable({ providedIn: 'root' })
 export class RemoteUiService {

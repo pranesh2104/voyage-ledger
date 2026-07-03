@@ -13,11 +13,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve",
-    "rootDir": "..",
-    "paths": {
-      "voyage-ui/ui": ["../voyage-ui/src/lib/index.ts"]
-    }
+    "module": "preserve"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -3,9 +3,15 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Trip, TripService, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
-import type { LoaderComponent } from 'voyage-ui/ui';
+import type { CurrencyFormatPipe, DateFormatPipe, LoaderComponent, TripDurationPipe } from 'voyage-ui';
 import { RemoteOutletComponent } from '../shared/components/remote-outlet/remote-outlet.component';
 import { RemoteUiService } from '../shared/services/remote-ui.service';
+
+const STATUS_COLORS: Record<Trip['status'], { color: string; bg: string }> = {
+  planning: { color: 'hsl(215 80% 40%)', bg: 'hsl(215 80% 40% / 0.1)' },
+  ongoing: { color: 'hsl(150 55% 30%)', bg: 'hsl(150 55% 30% / 0.1)' },
+  completed: { color: 'hsl(210 10% 40%)', bg: 'hsl(210 10% 40% / 0.1)' },
+};
 
 @Component({
   selector: 'app-dashboard',
@@ -18,6 +24,10 @@ export class DashboardComponent implements OnInit {
   private readonly remoteUi = inject(RemoteUiService);
   readonly loaderComponent = signal<Type<LoaderComponent> | null>(null);
   readonly loaderInputs = { message: 'Loading dashboard...', fullPage: true };
+
+  private dateFormatPipe: DateFormatPipe | null = null;
+  private currencyFormatPipe: CurrencyFormatPipe | null = null;
+  private tripDurationPipe: TripDurationPipe | null = null;
 
   trips = signal<Trip[]>([]);
   stats = computed(() => {
@@ -37,7 +47,12 @@ export class DashboardComponent implements OnInit {
   private readonly snackbarService = inject(SnackbarService);
 
   constructor() {
-    this.remoteUi.load().then((m) => this.loaderComponent.set(m.LoaderComponent));
+    this.remoteUi.load().then((m) => {
+      this.loaderComponent.set(m.LoaderComponent);
+      this.dateFormatPipe = new m.DateFormatPipe();
+      this.currencyFormatPipe = new m.CurrencyFormatPipe();
+      this.tripDurationPipe = new m.TripDurationPipe();
+    });
     effect(() => {
       if (this.tripDialogService.savedCount() > 0) this.loadTrips();
     });
@@ -79,5 +94,25 @@ export class DashboardComponent implements OnInit {
 
   getRemainingAmount(trip: Trip): number {
     return trip.budget - trip.spent;
+  }
+
+  formatDate(value: Date | string): string {
+    return this.dateFormatPipe?.transform(value) ?? '';
+  }
+
+  formatCurrencyAmount(amount: number, currencyCode: string): string {
+    return this.currencyFormatPipe?.transform(amount, currencyCode) ?? '';
+  }
+
+  getTripDuration(trip: Trip): string {
+    return this.tripDurationPipe?.transform(trip.startDate, trip.endDate) ?? '';
+  }
+
+  getStatusColor(status: Trip['status']): string {
+    return STATUS_COLORS[status].color;
+  }
+
+  getStatusBg(status: Trip['status']): string {
+    return STATUS_COLORS[status].bg;
   }
 }

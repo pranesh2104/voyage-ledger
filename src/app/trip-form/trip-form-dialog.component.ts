@@ -9,7 +9,7 @@ import {
   ViewContainerRef,
   viewChild,
 } from '@angular/core';
-import type { DialogComponent } from 'voyage-ui/ui';
+import type { DialogComponent } from 'voyage-ui';
 import { RemoteOutletComponent } from '../shared/components/remote-outlet/remote-outlet.component';
 import { RemoteUiService } from '../shared/services/remote-ui.service';
 import { TripDialogService } from '../services/trip-dialog.service';

@@ -16,7 +16,11 @@ export default withNativeFederation({
     'rxjs/fetch',
     'rxjs/testing',
     'rxjs/webSocket',
-    // Add further packages you don't need at runtime
+    // voyage-ui is linked as a package.json dependency purely so TypeScript can
+    // resolve `import type` for the federated remote's types - shareAll() would
+    // otherwise also bundle it as a shared singleton, colliding with its real
+    // identity as a `remotes` entry loaded via loadRemoteModule at runtime.
+    'voyage-ui',
   ],
 
   // Please read our FAQ about sharing libs:
