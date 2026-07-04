@@ -45,8 +45,8 @@ importers:
         specifier: ^2.3.0
         version: 2.8.1
       voyage-lib:
-        specifier: ^0.0.1
-        version: 0.0.1(@angular/common@21.2.5(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))
+        specifier: ^0.0.2
+        version: 0.0.2(@angular/common@21.2.5(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))
     devDependencies:
       '@angular-devkit/build-angular':
         specifier: ^21.0.4
@@ -4965,8 +4965,8 @@ packages:
       jsdom:
         optional: true
 
-  voyage-lib@0.0.1:
-    resolution: {integrity: sha512-505HkrOwXU/uVPpMwKNpYVoBZ0gbuuWEac5hByd5kHvsmlNCITi4wWkGGkeVFYH3sqTh9G9AVBgIRHYMbNW40w==}
+  voyage-lib@0.0.2:
+    resolution: {integrity: sha512-/2WrRrAb57U4Acynhuh2X0US8GpALB8ywOeqeprUIQJ5skMUJUnSWeugfRy19ZsSFfxzf1gLV5N9cc99fC4bag==}
     peerDependencies:
       '@angular/common': ^21.2.0
       '@angular/core': ^21.2.0
@@ -10326,7 +10326,7 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  voyage-lib@0.0.1(@angular/common@21.2.5(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)):
+  voyage-lib@0.0.2(@angular/common@21.2.5(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)):
     dependencies:
       '@angular/common': 21.2.5(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2))(rxjs@7.8.2)
       '@angular/core': 21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)
