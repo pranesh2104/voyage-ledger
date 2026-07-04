@@ -1,13 +1,14 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CurrencyFormatPipe, DateFormatPipe, LoaderComponent, Trip, TripDurationPipe, TripService, SnackbarService } from 'voyage-lib';
+import { ConfirmDialogComponent, CurrencyFormatPipe, DateFormatPipe, LoaderComponent, Trip, TripDurationPipe, TripService, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
+import { TripManagementService } from '../services/trip-management.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, LoaderComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe],
+  imports: [CommonModule, LoaderComponent, ConfirmDialogComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -24,7 +25,12 @@ export class DashboardComponent implements OnInit {
 
   isLoading = signal(true);
 
+  deleteTargetId = signal<string | null>(null);
+  deleteTargetTrip = computed(() => this.trips().find(t => t.id === this.deleteTargetId()));
+  isDeleting = signal(false);
+
   private readonly tripService = inject(TripService);
+  private readonly tripManagementService = inject(TripManagementService);
   private readonly router = inject(Router);
   private readonly tripDialogService = inject(TripDialogService);
   private readonly snackbarService = inject(SnackbarService);
@@ -63,6 +69,34 @@ export class DashboardComponent implements OnInit {
 
   createTrip(): void {
     this.tripDialogService.openCreate();
+  }
+
+  deleteTrip(tripId: string): void {
+    this.deleteTargetId.set(tripId);
+  }
+
+  cancelDelete(): void {
+    if (this.isDeleting()) return;
+    this.deleteTargetId.set(null);
+  }
+
+  confirmDelete(): void {
+    const id = this.deleteTargetId();
+    if (!id) return;
+
+    this.isDeleting.set(true);
+    this.tripManagementService.deleteTrip(id).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        this.deleteTargetId.set(null);
+        this.snackbarService.success('Trip deleted successfully.', { duration: 3000 });
+        this.loadTrips();
+      },
+      error: () => {
+        this.isDeleting.set(false);
+        this.snackbarService.error('Failed to delete trip. Please try again later.', { duration: 4000 });
+      },
+    });
   }
 
   getBudgetPercentage(trip: Trip): number {

@@ -99,6 +99,7 @@
 
         <!-- Actions -->
         <div class="flex gap-2">
+          <!-- View Expenses -->
           <button (click)="viewExpenses(trip.id)"
             class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-150">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -109,6 +110,7 @@
             </svg>
             View Expenses
           </button>
+          <!-- Edit Trip -->
           <button (click)="editTrip(trip.id)"
             class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -117,6 +119,17 @@
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
             Edit Trip
+          </button>
+          <!-- Delete Trip -->
+          <button (click)="deleteTrip(trip.id)"
+            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
+            </svg>
+            Delete Trip
           </button>
         </div>
 
@@ -144,6 +157,16 @@
     </div>
     }
   </div>
+
+  <vl-confirm-dialog
+    [isOpen]="!!deleteTargetId()"
+    title="Delete Trip"
+    [message]="'Delete “' + (deleteTargetTrip()?.name ?? 'this trip') + '”? This action cannot be undone.'"
+    confirmLabel="Delete"
+    confirmVariant="danger"
+    [loading]="isDeleting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()" />
 
 </div>
 }
