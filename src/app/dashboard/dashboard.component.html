@@ -41,12 +41,15 @@
         <!-- Trip header -->
         <div class="flex items-start justify-between gap-3 mb-3">
           <h3 class="text-base font-semibold text-foreground leading-snug">{{ trip.name }}</h3>
-          <span class="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold"
-            [style.color]="getStatusColor(trip.status)" [style.background-color]="getStatusBg(trip.status)">
-            <span class="w-1.5 h-1.5 rounded-full shrink-0"
-              [style.background-color]="getStatusColor(trip.status)"></span>
-            {{ trip.status | titlecase }}
-          </span>
+          <select
+            class="shrink-0 pl-2.5 pr-1.5 py-1 rounded-full text-xs font-semibold border-none outline-none cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+            [style.color]="getStatusColor(trip.status)" [style.background-color]="getStatusBg(trip.status)"
+            [disabled]="updatingStatusId() === trip.id"
+            [value]="trip.status" (change)="onStatusChange(trip, $event)">
+            @for (status of statusOptions; track status.value) {
+              <option [value]="status.value">{{ status.label }}</option>
+            }
+          </select>
         </div>
 
         <!-- Details -->

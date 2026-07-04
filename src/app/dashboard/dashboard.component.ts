@@ -29,6 +29,13 @@ export class DashboardComponent implements OnInit {
   deleteTargetTrip = computed(() => this.trips().find(t => t.id === this.deleteTargetId()));
   isDeleting = signal(false);
 
+  updatingStatusId = signal<string | null>(null);
+  statusOptions = [
+    { value: 'planning', label: 'Planning' },
+    { value: 'ongoing', label: 'Ongoing' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
   private readonly tripService = inject(TripService);
   private readonly tripManagementService = inject(TripManagementService);
   private readonly router = inject(Router);
@@ -95,6 +102,25 @@ export class DashboardComponent implements OnInit {
       error: () => {
         this.isDeleting.set(false);
         this.snackbarService.error('Failed to delete trip. Please try again later.', { duration: 4000 });
+      },
+    });
+  }
+
+  onStatusChange(trip: Trip, event: Event): void {
+    const status = (event.target as HTMLSelectElement).value as Trip['status'];
+    if (status === trip.status) return;
+
+    this.updatingStatusId.set(trip.id);
+    this.tripManagementService.updateTrip({ ...trip, status }).subscribe({
+      next: (updated) => {
+        this.updatingStatusId.set(null);
+        this.trips.update(trips => trips.map(t => t.id === updated.id ? updated : t));
+        this.snackbarService.success('Trip status updated.', { duration: 3000 });
+      },
+      error: () => {
+        this.updatingStatusId.set(null);
+        (event.target as HTMLSelectElement).value = trip.status;
+        this.snackbarService.error('Failed to update trip status. Please try again.', { duration: 4000 });
       },
     });
   }

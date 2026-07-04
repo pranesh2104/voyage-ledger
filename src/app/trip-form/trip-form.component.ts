@@ -2,7 +2,7 @@ import { Component, DestroyRef, effect, inject, input, OnInit, output, signal } 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { merge, Subscription, startWith } from 'rxjs';
-import { TripService, CURRENCIES, SnackbarService } from 'voyage-lib';
+import { TripService, SnackbarService } from 'voyage-lib';
 import { TripManagementService } from '../services/trip-management.service';
 
 @Component({
@@ -27,7 +27,6 @@ export class TripFormComponent implements OnInit {
   tripForm!: FormGroup;
   isSubmitting = false;
   isLoadingTrip = signal(false);
-  currencies = CURRENCIES;
   private tripSub?: Subscription;
 
   statusOptions = [
@@ -50,7 +49,7 @@ export class TripFormComponent implements OnInit {
         this.tripForm.reset({
           name: '', destination: '', country: '',
           startDate: '', endDate: '',
-          budget: '', currency: 'USD', status: 'planning',
+          budget: '', currency: 'INR', status: 'planning',
         });
         if (id) this.loadTrip();
       }
@@ -78,7 +77,7 @@ export class TripFormComponent implements OnInit {
       startDate: ['', Validators.required],
       endDate: ['', Validators.required],
       budget: ['', [Validators.required, Validators.min(1)]],
-      currency: ['USD', Validators.required],
+      currency: ['INR', Validators.required], // currency picker removed from UI; app is INR-only for now
       status: ['planning', Validators.required],
     }, { validators: this.dateRangeValidator });
   }
@@ -180,7 +179,6 @@ export class TripFormComponent implements OnInit {
   get startDateControl() { return this.tripForm.get('startDate'); }
   get endDateControl() { return this.tripForm.get('endDate'); }
   get budgetControl() { return this.tripForm.get('budget'); }
-  get currencyControl() { return this.tripForm.get('currency'); }
   get statusControl() { return this.tripForm.get('status'); }
 
   hasDateRangeError(): boolean {

@@ -51,6 +51,19 @@ export class AuthService {
     return this.httpService.put<ApiResponse>('/auth/reset-password', { password });
   }
 
+  updateProfile(display_name: string, username: string): Observable<ApiResponse<{ user: User }>> {
+    const body = { display_name, username };
+    return this.httpService.put<ApiResponse<{ user: User }>>('/auth/profile', body);
+  }
+
+  updateEmail(email: string): Observable<ApiResponse> {
+    return this.httpService.put<ApiResponse>('/auth/email', { email });
+  }
+
+  updatePassword(password: string): Observable<ApiResponse> {
+    return this.httpService.put<ApiResponse>('/auth/password', { password });
+  }
+
   // No longer needed — session is set server-side during login and OTP verification
   setSession(accessToken: string, refreshToken: string): Observable<ApiResponse> {
     const body = { accessToken, refreshToken };

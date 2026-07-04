@@ -87,8 +87,9 @@
     <!-- Footer -->
     <div class="border-t border-border py-2 px-2">
 
-      <!-- Account (disabled) -->
-      <div class="flex items-center py-2.5 w-full rounded-lg text-sm text-muted-foreground opacity-40 cursor-default pointer-events-none mb-0.5"
+      <!-- Account -->
+      <a routerLink="/account" routerLinkActive="sidebar-nav-active"
+        class="flex items-center py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 mb-0.5"
         [class.gap-3]="isSidebarExpanded()"
         [class.px-3]="isSidebarExpanded()"
         [class.justify-center]="!isSidebarExpanded()"
@@ -99,7 +100,7 @@
         @if (isSidebarExpanded()) {
           <span class="whitespace-nowrap">Account</span>
         }
-      </div>
+      </a>
 
       <!-- Sign Out -->
       <button (click)="signOut()"

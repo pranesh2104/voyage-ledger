@@ -28,6 +28,12 @@ export const appRoutes: Route[] = [
                     loadRemoteModule('expenseModule', './Routes').then((m) => m.remoteRoutes),
                 data: { title: 'Expenses' },
             },
+            {
+                path: 'account',
+                loadComponent: () =>
+                    import('./account/account.component').then((m) => m.AccountComponent),
+                data: { title: 'Account' },
+            },
         ],
     },
     {
