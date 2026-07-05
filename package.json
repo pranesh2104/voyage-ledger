@@ -23,7 +23,7 @@
   "private": true,
   "packageManager": "pnpm@10.12.1",
   "dependencies": {
-    "@angular-architects/native-federation": "^21.2.2",
+    "@angular-architects/native-federation": "^21.2.5",
     "@angular/animations": "^21.0.0",
     "@angular/common": "^21.0.0",
     "@angular/compiler": "^21.0.0",

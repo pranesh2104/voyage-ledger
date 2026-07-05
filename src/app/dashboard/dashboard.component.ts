@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConfirmDialogComponent, CurrencyFormatPipe, DateFormatPipe, LoaderComponent, Trip, TripDurationPipe, TripService, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '../services/trip-dialog.service';
@@ -8,7 +9,7 @@ import { TripManagementService } from '../services/trip-management.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, LoaderComponent, ConfirmDialogComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe],
+  imports: [CommonModule, FormsModule, LoaderComponent, ConfirmDialogComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -24,6 +25,22 @@ export class DashboardComponent implements OnInit {
   });
 
   isLoading = signal(true);
+
+  searchTerm = signal('');
+  statusFilter = signal<'all' | Trip['status']>('all');
+  filteredTrips = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const status = this.statusFilter();
+
+    return this.trips().filter(trip => {
+      const matchesStatus = status === 'all' || trip.status === status;
+      const matchesTerm = !term
+        || trip.name.toLowerCase().includes(term)
+        || trip.destination.toLowerCase().includes(term)
+        || trip.country.toLowerCase().includes(term);
+      return matchesStatus && matchesTerm;
+    });
+  });
 
   deleteTargetId = signal<string | null>(null);
   deleteTargetTrip = computed(() => this.trips().find(t => t.id === this.deleteTargetId()));
@@ -131,6 +148,10 @@ export class DashboardComponent implements OnInit {
 
   getRemainingAmount(trip: Trip): number {
     return trip.budget - trip.spent;
+  }
+
+  isOverdue(trip: Trip): boolean {
+    return trip.status !== 'completed' && new Date(trip.endDate).getTime() < Date.now();
   }
 
   getStatusColor(status: string): string {
