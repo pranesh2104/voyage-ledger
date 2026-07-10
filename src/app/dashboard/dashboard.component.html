@@ -72,9 +72,11 @@
             <select
               class="appearance-none pl-2.5 pr-6 py-1 rounded-full text-xs font-semibold border-none outline-none cursor-pointer disabled:cursor-wait"
               [style.color]="getStatusColor(trip.status)" [style.background-color]="getStatusBg(trip.status)"
-              [disabled]="updatingStatusId() === trip.id" [value]="trip.status" (change)="onStatusChange(trip, $event)">
+              [disabled]="updatingStatusId() === trip.id" [ngModel]="trip.status"
+              (ngModelChange)="onStatusChange(trip, $event)">
               @for (status of statusOptions; track status.value) {
-              <option [value]="status.value">{{ status.label }}</option>
+              <option [value]="status.value" [style.color]="getStatusColor(status.value)"
+                [style.background-color]="getStatusBg(status.value)">{{ status.label }}</option>
               }
             </select>
             <svg class="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24"
@@ -113,7 +115,7 @@
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7v5l3 3" />
             </svg>
-            <span>Trip dates have passed — update status?</span>
+            <span>End date has passed</span>
           </div>
           }
         </div>
@@ -146,7 +148,7 @@
         <div class="flex gap-2">
           <!-- View Expenses -->
           <button (click)="viewExpenses(trip.id)"
-            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-150">
+            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-150 cursor-pointer">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="20" x2="18" y2="10" />
@@ -157,7 +159,7 @@
           </button>
           <!-- Edit Trip -->
           <button (click)="editTrip(trip.id)"
-            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150">
+            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150 cursor-pointer">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -167,7 +169,7 @@
           </button>
           <!-- Delete Trip -->
           <button (click)="deleteTrip(trip.id)"
-            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150">
+            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150 cursor-pointer">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6" />
@@ -195,7 +197,7 @@
       <h3 class="text-base font-semibold text-foreground mb-1">No trips match your search</h3>
       <p class="text-sm text-muted-foreground mb-6 max-w-xs">Try a different name, destination, or status filter.</p>
       <button (click)="searchTerm.set(''); statusFilter.set('all')"
-        class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150">
+        class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
         Clear filters
       </button>
     </div>
@@ -214,7 +216,7 @@
       <p class="text-sm text-muted-foreground mb-6 max-w-xs">Create your first trip to start tracking your adventures
         and budgets.</p>
       <button (click)="createTrip()"
-        class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150">
+        class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
         Create First Trip
       </button>
     </div>

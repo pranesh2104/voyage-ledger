@@ -35,7 +35,7 @@
     "es-module-shims": "^1.5.12",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "voyage-lib": "^0.0.2"
+    "voyage-lib": "^0.0.3"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^21.0.4",

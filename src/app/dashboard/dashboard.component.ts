@@ -123,8 +123,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  onStatusChange(trip: Trip, event: Event): void {
-    const status = (event.target as HTMLSelectElement).value as Trip['status'];
+  onStatusChange(trip: Trip, status: Trip['status']): void {
     if (status === trip.status) return;
 
     this.updatingStatusId.set(trip.id);
@@ -136,7 +135,6 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.updatingStatusId.set(null);
-        (event.target as HTMLSelectElement).value = trip.status;
         this.snackbarService.error('Failed to update trip status. Please try again.', { duration: 4000 });
       },
     });
