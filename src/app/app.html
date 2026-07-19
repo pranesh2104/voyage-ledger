@@ -1,8 +1,14 @@
-<!-- <ul class="remote-menu">
-  <li><a routerLink="/">Home</a></li>
-  <li><a routerLink="budgetModule">BudgetModule</a></li>
-  <li><a routerLink="mapModule">MapModule</a></li>
-<li><a routerLink="expenseModule">ExpenseModule</a></li>
-</ul> -->
+@if (navigating()) {
+<div class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background">
+  <div class="flex items-center gap-3">
+    <img src="assets/logo-v2-rupee.svg" alt="VoyageLedger Logo" class="w-10 h-10" />
+    <div class="text-foreground text-2xl font-bold tracking-tight">
+      Voyage<span class="text-secondary">Ledger</span>
+    </div>
+  </div>
+  <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
+  <p class="text-sm text-muted-foreground">Just a moment…</p>
+</div>
+}
 <router-outlet></router-outlet>
 <vl-snackbar></vl-snackbar>
