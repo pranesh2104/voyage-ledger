@@ -34,6 +34,12 @@ export const appRoutes: Route[] = [
           import('./account/account.component').then((m) => m.AccountComponent),
         data: { title: 'Account' },
       },
+      {
+        path: 'invites',
+        loadComponent: () =>
+          import('./invites/my-invites.component').then((m) => m.MyInvitesComponent),
+        data: { title: 'Trip Invitations' },
+      },
     ],
   },
   {

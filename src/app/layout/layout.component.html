@@ -87,41 +87,6 @@
       </div>
 
     </nav>
-
-    <!-- Footer -->
-    <div class="border-t border-border py-2 px-2">
-
-      <!-- Account -->
-      <a routerLink="/account" routerLinkActive="sidebar-nav-active"
-        class="flex items-center py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150 mb-0.5"
-        [class.gap-3]="isSidebarExpanded()" [class.px-3]="isSidebarExpanded()"
-        [class.justify-center]="!isSidebarExpanded()" [title]="!isSidebarExpanded() ? 'Account' : ''">
-        <svg class="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path
-            d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        @if (isSidebarExpanded()) {
-        <span class="whitespace-nowrap">Account</span>
-        }
-      </a>
-
-      <!-- Sign Out -->
-      <button (click)="signOut()"
-        class="flex items-center py-2.5 w-full rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors duration-150 cursor-pointer"
-        [class.gap-3]="isSidebarExpanded()" [class.px-3]="isSidebarExpanded()"
-        [class.justify-center]="!isSidebarExpanded()" [title]="!isSidebarExpanded() ? 'Sign Out' : ''">
-        <svg class="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path
-            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-        </svg>
-        @if (isSidebarExpanded()) {
-        <span class="whitespace-nowrap">Sign Out</span>
-        }
-      </button>
-
-    </div>
   </aside>
 
   <!-- ─────────────────────────────────────── MAIN COLUMN -->
@@ -156,8 +121,79 @@
       <div class="flex-1"></div>
 
       <!-- Right actions -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-4">
         <app-theme-toggle />
+
+        @if (authService.currentuser(); as user) {
+        <div class="relative border border-border rounded-full" [class.px-1.5]="isSidebarExpanded()">
+          <button (click)="$event.stopPropagation(); toggleUserMenu()"
+            class="relative z-50 flex items-center gap-2 pl-1.5 pr-2 py-1.5 rounded-full hover:bg-muted transition-colors duration-150 cursor-pointer">
+            <vl-avatar [name]="user.display_name || user.username" size="xs" />
+            <span class="text-sm font-medium text-foreground hidden sm:inline">{{ user.display_name || user.username
+              }}</span>
+            <svg class="w-3.5 h-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          @if (isUserMenuOpen()) {
+          <div class="fixed inset-0 z-40" (click)="isUserMenuOpen.set(false)"></div>
+
+          <div
+            class="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+
+            <!-- User info -->
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
+              <vl-avatar [name]="user.display_name || user.username" size="sm" />
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground truncate">{{ user.display_name || user.username }}
+                </p>
+                <p class="text-xs text-muted-foreground truncate">{{ user.email }}</p>
+              </div>
+            </div>
+
+            <div class="py-1">
+              <!-- Account -->
+              <a routerLink="/account" (click)="isUserMenuOpen.set(false)"
+                class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Account
+              </a>
+
+              <!-- Settings (disabled - no settings page yet) -->
+              <div
+                class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground opacity-40 cursor-default pointer-events-none"
+                title="Coming soon">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
+                Settings
+              </div>
+
+              <!-- Sign Out -->
+              <button (click)="signOut()"
+                class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors duration-150 cursor-pointer">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+        }
+
         <button (click)="tripDialogService.openCreate()"
           class="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 whitespace-nowrap">
           <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -180,3 +216,4 @@
 </div>
 
 <app-trip-form-dialog />
+<app-members-dialog />

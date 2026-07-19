@@ -9,6 +9,24 @@
     <p class="text-sm text-muted-foreground mt-0.5">Overview of your travel activity</p>
   </div>
 
+  <!-- Unsettled balances banner -->
+  @if (unsettledSummary().tripCount > 0) {
+  <div class="flex items-center gap-2.5 bg-secondary/10 border border-secondary/30 rounded-xl px-4 py-3 mb-8 text-sm">
+    <svg class="w-4 h-4 text-secondary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v4M12 16h.01" />
+    </svg>
+    <span class="text-foreground">
+      You owe
+      @for (part of unsettledSummary().parts; track part.currency; let last = $last) {
+      <span class="font-semibold">{{ part.amount | vlCurrency:part.currency }}</span>{{ !last ? ' + ' : '' }}
+      }
+      across {{ unsettledSummary().tripCount }} trip{{ unsettledSummary().tripCount !== 1 ? 's' : '' }}
+    </span>
+  </div>
+  }
+
   <!-- Stats -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
     <div class="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
@@ -67,22 +85,41 @@
         <!-- Trip header -->
         <div class="flex items-start justify-between gap-3 mb-3">
           <h3 class="text-base font-semibold text-foreground leading-snug">{{ trip.name }}</h3>
-          <div class="relative shrink-0" [class.opacity-60]="updatingStatusId() === trip.id"
-            [style.color]="getStatusColor(trip.status)">
-            <select
-              class="appearance-none pl-2.5 pr-6 py-1 rounded-full text-xs font-semibold border-none outline-none cursor-pointer disabled:cursor-wait"
-              [style.color]="getStatusColor(trip.status)" [style.background-color]="getStatusBg(trip.status)"
-              [disabled]="updatingStatusId() === trip.id" [ngModel]="trip.status"
-              (ngModelChange)="onStatusChange(trip, $event)">
-              @for (status of statusOptions; track status.value) {
-              <option [value]="status.value" [style.color]="getStatusColor(status.value)"
-                [style.background-color]="getStatusBg(status.value)">{{ status.label }}</option>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Members -->
+            <button (click)="openMembers(trip)"
+              class="flex items-center -space-x-2 shrink-0 cursor-pointer hover:opacity-80 transition-opacity duration-150"
+              aria-label="Manage members" title="Members">
+              @for (member of getVisibleMembers(trip); track member.userId) {
+              <div class="rounded-full ring-2 ring-card">
+                <vl-avatar [name]="member.displayName" size="xs" />
+              </div>
               }
-            </select>
-            <svg class="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 9l6 6 6-6" />
-            </svg>
+              @if (getExtraMemberCount(trip) > 0) {
+              <div
+                class="w-6 h-6 rounded-full ring-2 ring-card bg-muted text-muted-foreground text-[10px] font-semibold flex items-center justify-center">
+                +{{ getExtraMemberCount(trip) }}
+              </div>
+              }
+            </button>
+
+            <div class="relative" [class.opacity-60]="updatingStatusId() === trip.id"
+              [style.color]="getStatusColor(trip.status)">
+              <select
+                class="appearance-none pl-2.5 pr-6 py-1 rounded-full text-xs font-semibold border-none outline-none cursor-pointer disabled:cursor-wait"
+                [style.color]="getStatusColor(trip.status)" [style.background-color]="getStatusBg(trip.status)"
+                [disabled]="updatingStatusId() === trip.id" [ngModel]="trip.status"
+                (ngModelChange)="onStatusChange(trip, $event)">
+                @for (status of statusOptions; track status.value) {
+                <option [value]="status.value" [style.color]="getStatusColor(status.value)"
+                  [style.background-color]="getStatusBg(status.value)">{{ status.label }}</option>
+                }
+              </select>
+              <svg class="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -121,112 +158,160 @@
         </div>
 
         <!-- Budget block -->
-        <div class="bg-muted/40 rounded-lg px-4 py-3 mb-4">
-          <div class="flex justify-between text-xs mb-3">
+        <div class="relative overflow-hidden rounded-xl bg-primary-light px-4 py-4 mb-4">
+          <!-- Decorative circles -->
+          <div class="absolute -right-6 -top-10 w-28 h-28 rounded-full bg-white/10 pointer-events-none"></div>
+          <div class="absolute right-10 top-8 w-14 h-14 rounded-full bg-white/10 pointer-events-none"></div>
+
+          <div class="relative flex justify-between text-xs mb-4">
             <div>
-              <p class="text-muted-foreground mb-0.5">Budget</p>
-              <p class="font-semibold text-foreground text-sm">{{ trip.budget | vlCurrency:trip.currency }}</p>
+              <p class="text-primary-foreground/70 uppercase tracking-wider mb-1">Budget</p>
+              <p class="font-bold text-primary-foreground text-lg">{{ trip.budget | vlCurrency:trip.currency }}</p>
             </div>
             <div class="text-center">
-              <p class="text-muted-foreground mb-0.5">Spent</p>
-              <p class="font-semibold text-foreground text-sm">{{ trip.spent | vlCurrency:trip.currency }}</p>
+              <p class="text-primary-foreground/70 uppercase tracking-wider mb-1">Spent</p>
+              <p class="font-bold text-primary-foreground text-lg">{{ trip.spent | vlCurrency:trip.currency }}</p>
             </div>
             <div class="text-right">
-              <p class="text-muted-foreground mb-0.5">Remaining</p>
-              <p class="font-semibold text-foreground text-sm">{{ getRemainingAmount(trip) | vlCurrency:trip.currency }}
+              <p class="text-primary-foreground/70 uppercase tracking-wider mb-1">Left</p>
+              <p class="font-bold text-primary-foreground text-lg">{{ getRemainingAmount(trip) | vlCurrency:trip.currency }}
               </p>
             </div>
           </div>
-          <div class="h-1.5 bg-border rounded-full overflow-hidden">
-            <div class="h-full bg-primary rounded-full transition-all duration-500"
+          <div class="relative h-1.5 bg-white/25 rounded-full overflow-hidden">
+            <div class="h-full bg-white rounded-full transition-all duration-500"
               [style.width.%]="getBudgetPercentage(trip)"></div>
           </div>
-          <p class="text-right text-[11px] text-muted-foreground mt-1.5">{{ getBudgetPercentage(trip) }}% used</p>
+          <div class="relative flex items-center justify-between mt-2">
+            <span class="text-[11px] text-primary-foreground/70">Expenses Progress</span>
+            <span
+              class="text-[11px] font-semibold text-primary-foreground bg-white/20 rounded-full px-2 py-0.5">{{ getBudgetPercentage(trip) }}% USED</span>
+          </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex gap-2">
-          <!-- View Expenses -->
-          <button (click)="viewExpenses(trip.id)"
-            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-150 cursor-pointer">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <!-- Burn rate -->
+          @if (burnRates().get(trip.id); as burn) {
+          <div class="flex items-center gap-1.5 text-xs font-medium mb-4" [class.text-destructive]="!burn.onTrack"
+            [class.text-primary]="burn.onTrack">
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
+              <path d="M23 6l-9.5 9.5-5-5L1 18" />
+              <path d="M17 6h6v6" />
             </svg>
-            View Expenses
-          </button>
-          <!-- Edit Trip -->
-          <button (click)="editTrip(trip.id)"
-            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150 cursor-pointer">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-            Edit Trip
-          </button>
-          <!-- Delete Trip -->
-          <button (click)="deleteTrip(trip.id)"
-            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150 cursor-pointer">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-              <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
-            </svg>
-            Delete Trip
-          </button>
-        </div>
+            <span>Projected {{ burn.projected | vlCurrency:trip.currency }} · {{ burn.onTrack ? 'On track' : 'Over pace'
+              }}</span>
+          </div>
+          }
 
+          <!-- Your balance for this trip -->
+          @if (balanceByTrip().get(trip.id); as net) {
+          @if (net < -0.01) { <div class="flex items-center gap-1.5 text-xs font-medium text-destructive mb-4">
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5" />
+              <polyline points="5 12 12 19 19 12" />
+            </svg>
+            <span>You owe {{ -net | vlCurrency:trip.currency }}</span>
+        </div>
+        } @else if (net > 0.01) {
+        <div class="flex items-center gap-1.5 text-xs font-medium text-accent mb-4">
+          <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <polyline points="19 12 12 5 5 12" />
+          </svg>
+          <span>You're owed {{ net | vlCurrency:trip.currency }}</span>
+        </div>
+        }
+        }
       </div>
-      }
-    </div>
-    } @else if (trips().length > 0) {
-    <!-- No results match search/filter -->
-    <div
-      class="flex flex-col items-center justify-center py-16 px-6 bg-card border border-dashed border-border rounded-xl text-center">
-      <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <!-- View Expenses -->
+        <button (click)="viewExpenses(trip.id)"
+          class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-150 cursor-pointer">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          View Expenses
+        </button>
+        <!-- Edit Trip -->
+        <button (click)="editTrip(trip.id)"
+          class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150 cursor-pointer">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          Edit Trip
+        </button>
+        <!-- Delete Trip (creator only) -->
+        @if (trip.isCreator) {
+        <button (click)="deleteTrip(trip.id)"
+          class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150 cursor-pointer">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+            <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
+          </svg>
+          Delete Trip
+        </button>
+        }
       </div>
-      <h3 class="text-base font-semibold text-foreground mb-1">No trips match your search</h3>
-      <p class="text-sm text-muted-foreground mb-6 max-w-xs">Try a different name, destination, or status filter.</p>
-      <button (click)="searchTerm.set(''); statusFilter.set('all')"
-        class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
-        Clear filters
-      </button>
-    </div>
-    } @else {
-    <!-- Empty state -->
-    <div
-      class="flex flex-col items-center justify-center py-16 px-6 bg-card border border-dashed border-border rounded-xl text-center">
-      <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-        </svg>
-      </div>
-      <h3 class="text-base font-semibold text-foreground mb-1">No trips yet</h3>
-      <p class="text-sm text-muted-foreground mb-6 max-w-xs">Create your first trip to start tracking your adventures
-        and budgets.</p>
-      <button (click)="createTrip()"
-        class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
-        Create First Trip
-      </button>
+
     </div>
     }
   </div>
+  } @else if (trips().length > 0) {
+  <!-- No results match search/filter -->
+  <div
+    class="flex flex-col items-center justify-center py-16 px-6 bg-card border border-dashed border-border rounded-xl text-center">
+    <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+      <svg class="w-6 h-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    </div>
+    <h3 class="text-base font-semibold text-foreground mb-1">No trips match your search</h3>
+    <p class="text-sm text-muted-foreground mb-6 max-w-xs">Try a different name, destination, or status filter.</p>
+    <button (click)="searchTerm.set(''); statusFilter.set('all')"
+      class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
+      Clear filters
+    </button>
+  </div>
+  } @else {
+  <!-- Empty state -->
+  <div
+    class="flex flex-col items-center justify-center py-16 px-6 bg-card border border-dashed border-border rounded-xl text-center">
+    <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+      <svg class="w-6 h-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+      </svg>
+    </div>
+    <h3 class="text-base font-semibold text-foreground mb-1">No trips yet</h3>
+    <p class="text-sm text-muted-foreground mb-6 max-w-xs">Create your first trip to start tracking your adventures
+      and budgets.</p>
+    <button (click)="createTrip()"
+      class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
+      Create First Trip
+    </button>
+  </div>
+  }
+</div>
 
-  <vl-confirm-dialog [isOpen]="!!deleteTargetId()" title="Delete Trip"
-    [message]="'Delete “' + (deleteTargetTrip()?.name ?? 'this trip') + '”? This action cannot be undone.'"
-    confirmLabel="Delete" confirmVariant="danger" [loading]="isDeleting()" (confirmed)="confirmDelete()"
-    (cancelled)="cancelDelete()" />
+<vl-confirm-dialog [isOpen]="!!deleteTargetId()" title="Delete Trip"
+  [message]="'Delete “' + (deleteTargetTrip()?.name ?? 'this trip') + '”? This action cannot be undone.'"
+  confirmLabel="Delete" confirmVariant="danger" [loading]="isDeleting()" (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()" />
 
 </div>
 }

@@ -46,7 +46,9 @@ export class Verify implements OnInit, OnDestroy {
               if (type === 'recovery') {
                 this.router.navigate(['/auth/reset-password']);
               } else {
-                this.router.navigate(['/dashboard']);
+                const returnUrl = localStorage.getItem('returnUrl');
+                localStorage.removeItem('returnUrl');
+                this.router.navigateByUrl(returnUrl || '/dashboard');
               }
             }, 2000);
           },

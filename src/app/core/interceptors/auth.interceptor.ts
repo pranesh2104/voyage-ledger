@@ -10,8 +10,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        router.navigate(['/auth/signin']);
+      // /auth/user 401s come from authGuard's own login check (during route resolution,
+      // where router.url still reflects the last *committed* route, not the pending one,
+      // so it can't be trusted here) or from the landing page's silent session check
+      // (which intentionally stays on the landing page for a logged-out visitor). Both
+      // already handle their own redirect, so skip this interceptor's redirect here.
+      if (error.status === 401 && !req.url.endsWith('/auth/user') && !router.url.startsWith('/auth/')) {
+        router.navigate(['/auth/signin'], { queryParams: { returnUrl: router.url } });
       }
       return throwError(() => error);
     })
