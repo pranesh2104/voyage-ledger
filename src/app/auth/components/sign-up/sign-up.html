@@ -44,7 +44,7 @@
 
       <div class="text-center lg:text-left mb-8">
         <h2 class="text-3xl font-bold text-foreground mb-2">Create Account</h2>
-        <p class="text-muted-foreground">Get started in minutes.</p>
+        <p class="text-muted-foreground">{{ redirectMessage() || 'Get started in minutes.' }}</p>
       </div>
 
       <form (submit)="onSubmit($event)" class="space-y-5">

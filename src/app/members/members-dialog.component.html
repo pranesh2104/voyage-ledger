@@ -1,0 +1,63 @@
+<vl-dialog
+  [isOpen]="dialogService.isOpen()"
+  title="Trip Members"
+  [subtitle]="dialogService.trip()?.name ?? ''"
+  (closed)="close()">
+
+  @if (isLoading()) {
+  <vl-loader message="Loading members..." />
+  } @else {
+  <div class="px-6 py-6">
+
+  @if (dialogService.trip()?.isCreator) {
+  <!-- Invite by email -->
+  <div class="flex gap-2 mb-5">
+    <input type="email" placeholder="Invite by email" [ngModel]="inviteEmail()"
+      (ngModelChange)="inviteEmail.set($event)"
+      class="flex-1 px-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-colors duration-150" />
+    <vl-button variant="primary" [disabled]="!inviteEmail().trim()" [loading]="isSendingInvite()"
+      (click)="sendInvite()">Invite</vl-button>
+  </div>
+  }
+
+  <!-- Members -->
+  <div class="mb-5">
+    <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Members</h3>
+    <div class="space-y-2">
+      @for (member of members(); track member.userId) {
+      <div class="flex items-center justify-between gap-2 py-1.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <vl-avatar [name]="member.displayName || member.email" size="xs" />
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-foreground truncate">{{ member.displayName || member.email }}</p>
+            <p class="text-xs text-muted-foreground truncate">{{ member.email }}</p>
+          </div>
+        </div>
+        @if (dialogService.trip()?.isCreator && member.userId !== currentUserId()) {
+        <button (click)="removeMember(member.userId)"
+          class="text-xs font-medium text-destructive hover:underline shrink-0 cursor-pointer">Remove</button>
+        }
+      </div>
+      } @empty {
+      <p class="text-sm text-muted-foreground">No members yet.</p>
+      }
+    </div>
+  </div>
+
+  @if (dialogService.trip()?.isCreator && pendingInvites().length > 0) {
+  <div>
+    <h3 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Pending Invites</h3>
+    <div class="space-y-2">
+      @for (invite of pendingInvites(); track invite.id) {
+      <div class="flex items-center justify-between gap-2 py-1.5">
+        <p class="text-sm text-muted-foreground truncate">{{ invite.email }}</p>
+        <button (click)="revokeInvite(invite.id)"
+          class="text-xs font-medium text-destructive hover:underline shrink-0 cursor-pointer">Revoke</button>
+      </div>
+      }
+    </div>
+  </div>
+  }
+  </div>
+  }
+</vl-dialog>

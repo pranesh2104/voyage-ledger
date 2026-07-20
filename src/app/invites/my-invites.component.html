@@ -1,0 +1,50 @@
+@if (isLoading()) {
+<vl-loader message="Loading invitations..." [fullPage]="true" />
+} @else {
+<div class="p-6 md:p-8 max-w-3xl mx-auto">
+
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">Trip Invitations</h1>
+    <p class="text-sm text-muted-foreground mt-0.5">Trips you've been invited to join</p>
+  </div>
+
+  @if (invites().length > 0) {
+  <div class="space-y-4">
+    @for (invite of invites(); track invite.id) {
+    <div class="bg-card border border-border rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap">
+      <div class="min-w-0">
+        <h3 class="text-base font-semibold text-foreground leading-snug">{{ invite.tripName }}</h3>
+        <p class="text-sm text-muted-foreground mt-0.5">{{ invite.destination }}, {{ invite.country }}</p>
+        <p class="text-xs text-muted-foreground mt-1">{{ invite.startDate | vlDateFormat }} – {{ invite.endDate |
+          vlDateFormat }}</p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <button (click)="decline(invite)" [disabled]="respondingId() === invite.id"
+          class="px-4 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150 cursor-pointer disabled:cursor-wait disabled:opacity-60">
+          Decline
+        </button>
+        <button (click)="accept(invite)" [disabled]="respondingId() === invite.id"
+          class="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer disabled:cursor-wait disabled:opacity-60">
+          Accept
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <div
+    class="flex flex-col items-center justify-center py-16 px-6 bg-card border border-dashed border-border rounded-xl text-center">
+    <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+      <svg class="w-6 h-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path
+          d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M16 3.13a4 4 0 010 7.75M12.5 11a4 4 0 100-8 4 4 0 000 8zM3 20v-2a4 4 0 014-4h1a4 4 0 014 4v2" />
+      </svg>
+    </div>
+    <h3 class="text-base font-semibold text-foreground mb-1">No pending invitations</h3>
+    <p class="text-sm text-muted-foreground max-w-xs">When someone invites you to a trip, it'll show up here.</p>
+  </div>
+  }
+
+</div>
+}

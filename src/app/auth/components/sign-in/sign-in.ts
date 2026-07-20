@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { form, required, minLength, email, pattern, FormField, submit } from '@angular/forms/signals';
 import { AuthService } from '../../services/auth';
 import { lastValueFrom } from 'rxjs';
@@ -12,7 +12,7 @@ import { PASSWORD_PATTERN } from '../../constants/auth.constant';
   templateUrl: './sign-in.html',
   standalone: true
 })
-export class SignIn {
+export class SignIn implements OnInit {
   /**
    * Show password toggle
    */
@@ -38,7 +38,29 @@ export class SignIn {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private snackbarService = inject(SnackbarService);
+
+  /**
+   * Where the user was trying to go before being redirected here, so we can
+   * tell them why they're on this page instead of just showing a bare form.
+   */
+  private readonly returnUrl = signal<string | null>(null);
+  readonly redirectMessage = computed(() => {
+    const url = this.returnUrl();
+    if (!url) return null;
+    if (url.startsWith('/invites')) return "Sign in to view your trip invitation.";
+    return 'Please sign in to continue where you left off.';
+  });
+
+  ngOnInit(): void {
+    // Persisted (not just carried as a query param) so it survives the
+    // sign-up -> confirm-email-in-a-new-tab -> verify hop for new invitees.
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.returnUrl.set(returnUrl);
+    if (returnUrl) localStorage.setItem('returnUrl', returnUrl);
+  }
+
   /**
    * Toggle password visibility
    */
@@ -64,7 +86,9 @@ export class SignIn {
         }
         return;
       }
-      this.router.navigate(['/dashboard']);
+      const returnUrl = localStorage.getItem('returnUrl');
+      localStorage.removeItem('returnUrl');
+      this.router.navigateByUrl(returnUrl || '/dashboard');
       return undefined;
     });
   }

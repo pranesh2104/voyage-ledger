@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { email, form, minLength, pattern, required, submit, validate, FormField } from '@angular/forms/signals';
 import { AuthService } from '../../services/auth';
 import { lastValueFrom } from 'rxjs';
@@ -77,10 +77,23 @@ export class SignUp implements OnInit {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private snackbarService = inject(SnackbarService);
 
+  private readonly returnUrl = signal<string | null>(null);
+  readonly redirectMessage = computed(() => {
+    const url = this.returnUrl();
+    if (!url) return null;
+    if (url.startsWith('/invites')) return 'Create an account to view your trip invitation.';
+    return null;
+  });
+
   ngOnInit(): void {
-    console.log();
+    // Same persisted return-destination pattern as sign-in, so a first-time
+    // invitee lands back on the intended page once they confirm their email.
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.returnUrl.set(returnUrl);
+    if (returnUrl) localStorage.setItem('returnUrl', returnUrl);
   }
   /**
    * Toggles the visibility of the password field.
