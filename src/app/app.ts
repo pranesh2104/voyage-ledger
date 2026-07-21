@@ -1,15 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  NavigationStart,
-  Router,
-  RouterModule,
-} from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { NavigationCancel, NavigationEnd, NavigationError, Router, RouterModule } from '@angular/router';
 import { SnackbarComponent } from 'voyage-lib';
-import { filter, map } from 'rxjs';
+import { filter, take } from 'rxjs';
 
 @Component({
   imports: [RouterModule, SnackbarComponent],
@@ -22,17 +14,19 @@ export class App {
 
   private router = inject(Router);
 
-  protected navigating = toSignal(
-    this.router.events.pipe(
-      filter(
-        (event) =>
-          event instanceof NavigationStart ||
-          event instanceof NavigationEnd ||
-          event instanceof NavigationCancel ||
-          event instanceof NavigationError,
-      ),
-      map((event) => event instanceof NavigationStart),
-    ),
-    { initialValue: false },
-  );
+  protected initialLoading = signal(true);
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter(
+          (event) =>
+            event instanceof NavigationEnd ||
+            event instanceof NavigationCancel ||
+            event instanceof NavigationError,
+        ),
+        take(1),
+      )
+      .subscribe(() => this.initialLoading.set(false));
+  }
 }
