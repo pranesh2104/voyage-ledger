@@ -38,9 +38,9 @@ export class AuthService {
     return this.httpService.get<ApiResponse<{ user: User }>>('/auth/user');
   }
 
-  verifyToken(token_hash: string, type: string): Observable<ApiResponse<{ user: User }>> {
+  verifyToken(token_hash: string, type: string): Observable<ApiResponse<{ user?: User; pendingOtherEmail?: boolean }>> {
     const body = { token_hash, type };
-    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/verify-token', body);
+    return this.httpService.post<ApiResponse<{ user?: User; pendingOtherEmail?: boolean }>>('/auth/verify-token', body);
   }
 
   forgotPassword(email: string): Observable<ApiResponse> {
