@@ -7,6 +7,8 @@ import { TripDialogService } from '../services/trip-dialog.service';
 import { TripFormDialogComponent } from '../trip-form/trip-form-dialog.component';
 import { MembersDialogComponent } from '../members/members-dialog.component';
 
+const DESKTOP_BREAKPOINT = 1024;
+
 @Component({
   selector: 'app-layout',
   standalone: true,
@@ -15,7 +17,7 @@ import { MembersDialogComponent } from '../members/members-dialog.component';
   styleUrls: ['./layout.component.scss'],
 })
 export class LayoutComponent {
-  isSidebarExpanded = signal(true);
+  isSidebarExpanded = signal(window.innerWidth >= DESKTOP_BREAKPOINT);
   isUserMenuOpen = signal(false);
 
   private readonly router = inject(Router);
@@ -24,6 +26,12 @@ export class LayoutComponent {
 
   toggleSidebar(): void {
     this.isSidebarExpanded.update((v) => !v);
+  }
+
+  closeSidebarIfMobile(): void {
+    if (window.innerWidth < DESKTOP_BREAKPOINT) {
+      this.isSidebarExpanded.set(false);
+    }
   }
 
   toggleUserMenu(): void {
