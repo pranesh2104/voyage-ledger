@@ -138,7 +138,7 @@ export class AccountComponent implements OnInit, OnDestroy {
       next: () => {
         this.isSavingEmail.set(false);
         this.emailForm.reset();
-        this.snackbarService.success('Confirmation link sent. Check your new email to complete the change.', { duration: 5000 });
+        this.snackbarService.success('Confirmation links sent. Check both your current and new email to complete the change.', { duration: 5000 });
       },
       error: () => {
         this.isSavingEmail.set(false);
