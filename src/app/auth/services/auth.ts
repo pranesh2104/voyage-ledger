@@ -38,9 +38,9 @@ export class AuthService {
     return this.httpService.get<ApiResponse<{ user: User }>>('/auth/user');
   }
 
-  verifyToken(token_hash: string, type: string): Observable<ApiResponse<{ user: User }>> {
+  verifyToken(token_hash: string, type: string): Observable<ApiResponse<{ user?: User; pendingOtherEmail?: boolean }>> {
     const body = { token_hash, type };
-    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/verify-token', body);
+    return this.httpService.post<ApiResponse<{ user?: User; pendingOtherEmail?: boolean }>>('/auth/verify-token', body);
   }
 
   forgotPassword(email: string): Observable<ApiResponse> {
@@ -62,6 +62,16 @@ export class AuthService {
 
   updatePassword(password: string): Observable<ApiResponse> {
     return this.httpService.put<ApiResponse>('/auth/password', { password });
+  }
+
+  uploadAvatar(file: File): Observable<ApiResponse<{ user: User }>> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/avatar', formData);
+  }
+
+  removeAvatar(): Observable<ApiResponse<{ user: User }>> {
+    return this.httpService.delete<ApiResponse<{ user: User }>>('/auth/avatar');
   }
 
   // No longer needed — session is set server-side during login and OTP verification

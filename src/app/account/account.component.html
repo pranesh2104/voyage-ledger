@@ -15,6 +15,43 @@
         <h2 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Profile</h2>
       </div>
       <div class="p-6 space-y-5">
+        <div class="flex items-center gap-5 pb-5 border-b border-border">
+          <vl-avatar [name]="displayName()" [src]="avatarPreviewUrl() || avatarUrl()" size="xl" />
+
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-3">
+              <label
+                class="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
+                Choose photo
+                <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden"
+                  (change)="onAvatarFileSelected($event)">
+              </label>
+
+              @if (avatarPreviewUrl()) {
+              <button type="button" (click)="saveAvatar()" [disabled]="isSavingAvatar()"
+                class="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 disabled:opacity-60 disabled:cursor-wait">
+                {{ isSavingAvatar() ? 'Uploading...' : 'Save photo' }}
+              </button>
+              <button type="button" (click)="cancelAvatarSelection()" [disabled]="isSavingAvatar()"
+                class="px-4 py-2.5 rounded-lg text-sm font-medium text-foreground border border-border hover:bg-muted transition-colors duration-150">
+                Cancel
+              </button>
+              } @else if (avatarUrl()) {
+              <button type="button" (click)="removeAvatar()" [disabled]="isSavingAvatar()"
+                class="px-4 py-2.5 rounded-lg text-sm font-medium text-destructive border border-border hover:bg-muted transition-colors duration-150 disabled:opacity-60 disabled:cursor-wait">
+                {{ isSavingAvatar() ? 'Removing...' : 'Remove photo' }}
+              </button>
+              }
+            </div>
+
+            @if (avatarError()) {
+            <p class="mt-2 text-xs text-destructive">{{ avatarError() }}</p>
+            } @else {
+            <p class="mt-2 text-xs text-muted-foreground">JPEG, PNG, or WebP. Max 2MB.</p>
+            }
+          </div>
+        </div>
+
         <div>
           <label for="display_name" class="block text-sm font-medium text-foreground mb-1.5">Display Name</label>
           <input type="text" id="display_name" formControlName="display_name" placeholder="e.g., Jane Doe"

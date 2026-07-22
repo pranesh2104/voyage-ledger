@@ -65,6 +65,13 @@
             <a routerLink="/auth/signin" class="inline-block text-secondary font-bold hover:underline">Back to Sign In</a>
           </div>
 
+        } @else if (pendingOtherEmail()) {
+          <div class="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-700">
+            <p class="font-semibold">One more step</p>
+            <p class="text-sm mt-1">This email address is confirmed. To finish changing your email, open the other confirmation link we sent to your remaining inbox (your old or new address, whichever you haven't checked yet).</p>
+          </div>
+
+          <a routerLink="/auth/signin" class="inline-block text-secondary font-bold hover:underline">Back to Sign In</a>
         } @else {
           <p class="text-foreground mb-4">Your account was verified successfully. Redirecting to your dashboard...</p>
         }

@@ -17,6 +17,7 @@ export class Verify implements OnInit, OnDestroy {
   error = signal<string | null>(null);
   email = signal<string>('');
   resending = signal(false);
+  pendingOtherEmail = signal(false);
 
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -38,9 +39,16 @@ export class Verify implements OnInit, OnDestroy {
       const type = params['type'];
       if (tokenHash && type) {
         this.subscription.add(this.authService.verifyToken(tokenHash, type).subscribe({
-          next: (_: any) => {
+          next: (res) => {
             this.verifying.set(false);
             this.error.set(null);
+
+            if (res?.data?.pendingOtherEmail) {
+              this.pendingOtherEmail.set(true);
+              this.snackbarService.success('This email is confirmed. Please also check your other email inbox to finish the change.', { duration: 6000 });
+              return;
+            }
+
             this.snackbarService.success('Verification successful! Redirecting...', { duration: 3000 });
             setTimeout(() => {
               if (type === 'recovery') {
