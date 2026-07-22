@@ -27,7 +27,7 @@
       @for (member of members(); track member.userId) {
       <div class="flex items-center justify-between gap-2 py-1.5">
         <div class="flex items-center gap-2.5 min-w-0">
-          <vl-avatar [name]="member.displayName || member.email" size="xs" />
+          <vl-avatar [name]="member.displayName || member.email" [src]="member.avatarUrl ?? null" size="xs" />
           <div class="min-w-0">
             <p class="text-sm font-medium text-foreground truncate">{{ member.displayName || member.email }}</p>
             <p class="text-xs text-muted-foreground truncate">{{ member.email }}</p>

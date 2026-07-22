@@ -1,18 +1,21 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SnackbarService } from 'voyage-lib';
+import { AvatarComponent, SnackbarService } from 'voyage-lib';
 import { AuthService } from '../auth/services/auth';
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from '../auth/constants/auth.constant';
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AvatarComponent],
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.scss'],
 })
-export class AccountComponent implements OnInit {
+export class AccountComponent implements OnInit, OnDestroy {
   profileForm!: FormGroup;
   emailForm!: FormGroup;
   passwordForm!: FormGroup;
@@ -22,6 +25,13 @@ export class AccountComponent implements OnInit {
   isSavingPassword = signal(false);
 
   currentEmail = signal('');
+
+  displayName = signal('');
+  avatarUrl = signal<string | null>(null);
+  avatarPreviewUrl = signal<string | null>(null);
+  isSavingAvatar = signal(false);
+  avatarError = signal<string | null>(null);
+  private selectedAvatarFile: File | null = null;
 
   showPassword = signal(false);
   showConfirmPassword = signal(false);
@@ -48,13 +58,17 @@ export class AccountComponent implements OnInit {
 
   ngOnInit(): void {
     const user = this.authService.currentuser();
+    const { display_name, username, email, avatar_url } = user || {};
 
     this.profileForm = this.fb.group({
-      display_name: [user?.display_name ?? '', [Validators.required, Validators.maxLength(100)]],
-      username: [user?.username ?? '', [Validators.required, Validators.maxLength(50)]],
+      display_name: [display_name ?? '', [Validators.required, Validators.maxLength(100)]],
+      username: [username ?? '', [Validators.required, Validators.maxLength(50)]],
     });
 
-    this.currentEmail.set(user?.email ?? '');
+    this.displayName.set(display_name ?? username ?? '');
+    this.avatarUrl.set(avatar_url ?? null);
+
+    this.currentEmail.set(email ?? '');
     this.emailForm = this.fb.group({
       email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
     });
@@ -149,5 +163,80 @@ export class AccountComponent implements OnInit {
         this.snackbarService.error('Failed to update password. Please try again.', { duration: 4000 });
       },
     });
+  }
+
+  onAvatarFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    if (!file) return;
+
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      this.avatarError.set('Please choose a JPEG, PNG, or WebP image.');
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      this.avatarError.set('Image must be smaller than 2MB.');
+      return;
+    }
+
+    this.avatarError.set(null);
+    this.revokeAvatarPreview();
+    this.selectedAvatarFile = file;
+    this.avatarPreviewUrl.set(URL.createObjectURL(file));
+  }
+
+  cancelAvatarSelection(): void {
+    this.selectedAvatarFile = null;
+    this.revokeAvatarPreview();
+    this.avatarError.set(null);
+  }
+
+  saveAvatar(): void {
+    if (!this.selectedAvatarFile || this.isSavingAvatar()) return;
+
+    this.isSavingAvatar.set(true);
+    this.authService.uploadAvatar(this.selectedAvatarFile).subscribe({
+      next: (res) => {
+        this.isSavingAvatar.set(false);
+        this.selectedAvatarFile = null;
+        this.revokeAvatarPreview();
+        this.authService.setCurrentUser(res.data.user);
+        this.avatarUrl.set(res.data.user.avatar_url ?? null);
+        this.snackbarService.success('Profile photo updated.', { duration: 3000 });
+      },
+      error: () => {
+        this.isSavingAvatar.set(false);
+        this.snackbarService.error('Failed to upload photo. Please try again.', { duration: 4000 });
+      },
+    });
+  }
+
+  removeAvatar(): void {
+    if (this.isSavingAvatar()) return;
+
+    this.isSavingAvatar.set(true);
+    this.authService.removeAvatar().subscribe({
+      next: (res) => {
+        this.isSavingAvatar.set(false);
+        this.authService.setCurrentUser(res.data.user);
+        this.avatarUrl.set(null);
+        this.snackbarService.success('Profile photo removed.', { duration: 3000 });
+      },
+      error: () => {
+        this.isSavingAvatar.set(false);
+        this.snackbarService.error('Failed to remove photo. Please try again.', { duration: 4000 });
+      },
+    });
+  }
+
+  private revokeAvatarPreview(): void {
+    const preview = this.avatarPreviewUrl();
+    if (preview) URL.revokeObjectURL(preview);
+    this.avatarPreviewUrl.set(null);
+  }
+
+  ngOnDestroy(): void {
+    this.revokeAvatarPreview();
   }
 }

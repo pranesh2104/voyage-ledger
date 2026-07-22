@@ -92,7 +92,7 @@
               aria-label="Manage members" title="Members">
               @for (member of getVisibleMembers(trip); track member.userId) {
               <div class="rounded-full ring-2 ring-card">
-                <vl-avatar [name]="member.displayName" size="xs" />
+                <vl-avatar [name]="member.displayName" [src]="member.avatarUrl ?? null" size="xs" />
               </div>
               }
               @if (getExtraMemberCount(trip) > 0) {

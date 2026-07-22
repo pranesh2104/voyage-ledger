@@ -64,6 +64,16 @@ export class AuthService {
     return this.httpService.put<ApiResponse>('/auth/password', { password });
   }
 
+  uploadAvatar(file: File): Observable<ApiResponse<{ user: User }>> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.httpService.post<ApiResponse<{ user: User }>>('/auth/avatar', formData);
+  }
+
+  removeAvatar(): Observable<ApiResponse<{ user: User }>> {
+    return this.httpService.delete<ApiResponse<{ user: User }>>('/auth/avatar');
+  }
+
   // No longer needed — session is set server-side during login and OTP verification
   setSession(accessToken: string, refreshToken: string): Observable<ApiResponse> {
     const body = { accessToken, refreshToken };
