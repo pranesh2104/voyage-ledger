@@ -1,25 +1,25 @@
 import { Route } from '@angular/router';
 import { loadRemoteModule } from '@angular-architects/native-federation';
-import { authGuard } from './auth/guards/auth.guard';
+import { authGuard } from '@core/guards/auth.guard';
 
 export const appRoutes: Route[] = [
   {
     path: '',
     pathMatch: 'full',
     loadComponent: () =>
-      import('./landing/landing').then((m) => m.LandingPage),
+      import('./features/landing/components/landing/landing').then((m) => m.LandingPage),
     data: { title: 'Track Your Travel Expenses' },
   },
   {
     path: '',
     loadComponent: () =>
-      import('./layout/layout.component').then((m) => m.LayoutComponent),
+      import('./layout/components/layout/layout.component').then((m) => m.LayoutComponent),
     canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
+          import('./features/dashboard/components/dashboard/dashboard.component').then((m) => m.DashboardComponent),
         data: { title: 'Dashboard' },
       },
       {
@@ -31,13 +31,13 @@ export const appRoutes: Route[] = [
       {
         path: 'account',
         loadComponent: () =>
-          import('./account/account.component').then((m) => m.AccountComponent),
+          import('./features/account/components/account/account.component').then((m) => m.AccountComponent),
         data: { title: 'Account' },
       },
       {
         path: 'invites',
         loadComponent: () =>
-          import('./invites/my-invites.component').then((m) => m.MyInvitesComponent),
+          import('./features/invites/components/my-invites/my-invites.component').then((m) => m.MyInvitesComponent),
         data: { title: 'Trip Invitations' },
       },
     ],
@@ -45,19 +45,19 @@ export const appRoutes: Route[] = [
   {
     path: 'auth/signin',
     loadComponent: () =>
-      import('./auth/components/sign-in/sign-in').then((m) => m.SignIn),
+      import('./features/auth/components/sign-in/sign-in').then((m) => m.SignIn),
     data: { title: 'Sign In' },
   },
   {
     path: 'auth/signup',
     loadComponent: () =>
-      import('./auth/components/sign-up/sign-up').then((m) => m.SignUp),
+      import('./features/auth/components/sign-up/sign-up').then((m) => m.SignUp),
     data: { title: 'Sign Up' },
   },
   {
     path: 'auth/forgot-password',
     loadComponent: () =>
-      import('./auth/components/forgot-password/forgot-password').then(
+      import('./features/auth/components/forgot-password/forgot-password').then(
         (m) => m.ForgotPassword,
       ),
     data: { title: 'Forgot Password' },
@@ -66,26 +66,26 @@ export const appRoutes: Route[] = [
     path: 'auth/confirm-email',
     loadComponent: () =>
       import(
-        './auth/components/confirmation-email/confirmation-email'
+        './features/auth/components/confirmation-email/confirmation-email'
       ).then((m) => m.ConfirmationEmail),
     data: { title: 'Confirm Email' },
   },
   {
     path: 'auth/verify',
     loadComponent: () =>
-      import('./auth/components/verify/verify').then((m) => m.Verify),
+      import('./features/auth/components/verify/verify').then((m) => m.Verify),
     data: { title: 'Verify' },
   },
   {
     path: 'auth/reset-password',
     loadComponent: () =>
-      import('./auth/components/reset-password/reset-password').then((m) => m.ResetPassword),
+      import('./features/auth/components/reset-password/reset-password').then((m) => m.ResetPassword),
     data: { title: 'Reset Password' },
   },
   {
     path: '**',
     loadComponent: () =>
-      import('./not-found/not-found.component').then((m) => m.NotFoundComponent),
+      import('./not-found/components/not-found/not-found.component').then((m) => m.NotFoundComponent),
     data: { title: 'Page Not Found' },
   },
 ];
