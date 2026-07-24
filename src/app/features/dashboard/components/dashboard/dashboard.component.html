@@ -37,7 +37,7 @@
         <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
           <svg class="w-5 h-5 text-accent" lucidePlane></svg>
         </div>
-        <p class="text-xs font-medium text-muted-foreground tracking-wider">Current Trip</p>
+        <p class="text-sm font-medium text-muted-foreground tracking-wider">Current Trip</p>
       </div>
 
       <p class="text-lg font-bold text-foreground">{{ currentTrip.name }}</p>
@@ -62,24 +62,29 @@
     }
 
     <!-- Upcoming Trip -->
-    @if(upcomingTrip()) {
+    @if(upcomingTrip(); as upcomingTrip) {
     <a class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200 group"
-      [routerLink]="['expenses/', upcomingTrip()?.id]">
-      <div class="flex gap-2">
+      [routerLink]="['expenses/', upcomingTrip?.id]">
+      <div class="flex gap-2 items-center mb-2">
         <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <svg lucideCalendarClock class="w-5 h-5 text-primary"></svg>
         </div>
-        <p class="text-xs font-medium text-muted-foreground tracking-wider mb-2">Upcoming Trips</p>
+        <p class="text-sm font-medium text-muted-foreground tracking-wider">Upcoming Trips</p>
       </div>
 
       <p class="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{{
-        upcomingTrip()?.name }}</p>
+        upcomingTrip?.name }}</p>
       <div class="flex gap-1 mb-4">
-        <p class="text-sm text-muted-foreground">{{ upcomingTrip()?.destination }}</p>,
-        <p class="text-sm text-muted-foreground">{{ upcomingTrip()?.country }}</p>
+        <p class="text-sm text-muted-foreground">{{ upcomingTrip?.destination }}</p>,
+        <p class="text-sm text-muted-foreground">{{ upcomingTrip?.country }}</p>
       </div>
 
-      <p class="mt-auto text-xl font-bold text-primary">{{ upcomingTrip()?.upcomingDates }}
+      <p class="text-sm text-muted-foreground">
+        <span class="font-semibold text-foreground">{{ upcomingTrip?.budget | vlCurrency:upcomingTrip?.currency }}</span>
+        budget
+      </p>
+
+      <p class="mt-auto text-xl font-bold text-primary">{{ upcomingTrip?.upcomingDates }}
         <span class="text-muted-foreground text-sm font-normal"> days to go</span>
       </p>
     </a>
@@ -90,12 +95,13 @@
     </p>
     }
     <!-- Spent -->
-    <div class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
+    <div
+      class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
       <div class="flex gap-2 items-center mb-2">
         <div class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
           <svg class="w-5 h-5 text-secondary" lucideWallet></svg>
         </div>
-        <p class="text-xs font-medium text-muted-foreground tracking-wider">Spent</p>
+        <p class="text-sm font-medium text-muted-foreground tracking-wider">Spent</p>
       </div>
 
       <p class="text-3xl font-bold text-foreground">{{ periodSpent() | currency:'INR':'symbol' }}</p>
