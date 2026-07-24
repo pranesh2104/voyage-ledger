@@ -5,8 +5,3 @@ export interface TripStatusOption {
   label: string;
 }
 
-export const TRIP_STATUS_OPTIONS: TripStatusOption[] = [
-  { value: 'planning', label: 'Planning' },
-  { value: 'ongoing', label: 'Ongoing' },
-  { value: 'completed', label: 'Completed' },
-];

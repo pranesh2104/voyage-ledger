@@ -4,8 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { merge, Subscription, startWith } from 'rxjs';
 import { TripService, SnackbarService } from 'voyage-lib';
 import { TripManagementService } from '@core/services/trip-management.service';
-import { TRIP_STATUS_OPTIONS } from '@shared/models/trip-status.model';
 import { DEFAULT_CURRENCY } from '../../constants/trip-form.constant';
+import { TRIP_STATUS_OPTIONS } from '@shared/constants/trip.constant';
 
 @Component({
   selector: 'app-trip-form',
@@ -31,7 +31,7 @@ export class TripFormComponent implements OnInit {
   isLoadingTrip = signal(false);
   private tripSub?: Subscription;
 
-  statusOptions = TRIP_STATUS_OPTIONS;
+  statusOptions = TRIP_STATUS_OPTIONS
 
   private readonly fb = inject(FormBuilder);
   private readonly tripService = inject(TripService);

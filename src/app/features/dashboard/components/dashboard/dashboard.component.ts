@@ -1,37 +1,48 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AvatarComponent, ConfirmDialogComponent, CurrencyFormatPipe, DateFormatPipe, LoaderComponent, SettlementService, Trip, TripBalance, TripDurationPipe, TripInviteService, TripMember, TripService, TripStatusStylePipe, SnackbarService } from 'voyage-lib';
+import { Router, RouterLink } from '@angular/router';
+import { AvatarComponent, ConfirmDialogComponent, CurrencyFormatPipe, DateFormatPipe, ExpenseService, LoaderComponent, SettlementService, SPENT_RANGE_LABELS, SpentRangeOption, Trip, TripBalance, TripDurationPipe, TripInviteService, TripMember, TripService, TripStatusStylePipe, SnackbarService } from 'voyage-lib';
 import { TripDialogService } from '@core/services/trip-dialog.service';
 import { TripManagementService } from '@core/services/trip-management.service';
 import { MembersDialogService } from '@core/services/members-dialog.service';
-import { TRIP_STATUS_OPTIONS } from '@shared/models/trip-status.model';
 import { MAX_VISIBLE_MEMBERS } from '../../constants/dashboard.constant';
-import { BurnRate, TripStats, UnsettledSummary } from '../../models/dashboard.model';
-
+import { BurnRate, UnsettledSummary } from '../../models/dashboard.model';
+import { TRIP_STATUS, TRIP_STATUS_OPTIONS } from '@shared/constants/trip.constant';
+import { LucideCalendarClock, LucideIconBase, LucidePlane, LucideTriangleAlert, LucideWallet } from "@lucide/angular";
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoaderComponent, ConfirmDialogComponent, AvatarComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe, TripStatusStylePipe],
+  imports: [CommonModule, FormsModule, LucideCalendarClock, LucidePlane, LucideTriangleAlert, LucideWallet, LoaderComponent, ConfirmDialogComponent, AvatarComponent, DateFormatPipe, CurrencyFormatPipe, TripDurationPipe, TripStatusStylePipe, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
   trips = signal<Trip[]>([]);
-  stats = computed<TripStats>(() => {
-    const trips = this.trips();
-    return {
-      activeTrips: trips.filter(t => t.status === 'ongoing' || t.status === 'planning').length,
-      totalBudget: trips.reduce((sum, t) => sum + t.budget, 0),
-      totalSpent: trips.reduce((sum, t) => sum + t.spent, 0)
-    };
-  });
+
+  // The backend blocks marking a trip ongoing when a member already has one, but
+  // it can't fully close every path (accepting an invite onto an already-ongoing
+  // trip skips that check entirely) — so this stays a list, not a single find(),
+  // and the dashboard surfaces the conflict instead of silently picking one.
+  ongoingTrips = computed(() => this.trips().filter(t => t.status === TRIP_STATUS.ON_GOING));
+  currentTrip = computed(() => this.ongoingTrips().length === 1 ? this.ongoingTrips()[0] : null);
+  hasOngoingConflict = computed(() => this.ongoingTrips().length > 1);
+
+  spentRangeOptions: { value: SpentRangeOption; label: string }[] =
+    (Object.keys(SPENT_RANGE_LABELS) as SpentRangeOption[]).map(value => ({ value, label: SPENT_RANGE_LABELS[value] }));
+
+  spentRange = signal<SpentRangeOption>('month');
+
+  periodSpent = signal(0);
+
+  periodLabel = computed(() => this.spentRange() === 'today' ? 'today' : `this ${this.spentRange()}`);
 
   isLoading = signal(true);
 
   searchTerm = signal('');
+
   statusFilter = signal<'all' | Trip['status']>('all');
+
   filteredTrips = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const status = this.statusFilter();
@@ -51,6 +62,7 @@ export class DashboardComponent implements OnInit {
   isDeleting = signal(false);
 
   updatingStatusId = signal<string | null>(null);
+
   statusOptions = TRIP_STATUS_OPTIONS;
 
   // Keyed by trip id so the template reads a memoized value instead of
@@ -64,9 +76,25 @@ export class DashboardComponent implements OnInit {
   });
 
   balances = signal<TripBalance[]>([]);
+
   balanceByTrip = computed(() => new Map(this.balances().map(b => [b.tripId, b.net])));
 
   membersByTrip = signal<Map<string, TripMember[]>>(new Map());
+
+  upcomingTrip = computed<(Trip & { upcomingDates: number }) | null>(() => {
+    return this.trips()
+      .filter(trip => new Date(trip.startDate) > new Date())
+      .reduce<(Trip & { upcomingDates: number }) | null>((near, trip) => {
+        if (!near || trip.startDate < near.startDate) {
+          return {
+            ...trip,
+            upcomingDates: Math.ceil((new Date(trip.startDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+          };
+        }
+
+        return near;
+      }, null);
+  });
 
   // Only the debtor side (what the user owes), grouped by currency since
   // trips can each use a different currency and can't be summed together.
@@ -91,6 +119,7 @@ export class DashboardComponent implements OnInit {
   private readonly tripService = inject(TripService);
   private readonly tripManagementService = inject(TripManagementService);
   private readonly settlementService = inject(SettlementService);
+  private readonly expenseService = inject(ExpenseService);
   private readonly router = inject(Router);
   private readonly tripDialogService = inject(TripDialogService);
   private readonly snackbarService = inject(SnackbarService);
@@ -106,6 +135,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadTrips();
     this.loadBalances();
+    this.loadSpentSummary();
   }
 
   loadTrips(): void {
@@ -140,6 +170,21 @@ export class DashboardComponent implements OnInit {
     this.settlementService.getMyBalances().subscribe({
       next: (balances) => this.balances.set(balances),
       error: () => { /* non-critical: badge/per-trip balance just won't show */ },
+    });
+  }
+
+  setSpentRange(range: SpentRangeOption): void {
+    if (range === this.spentRange()) return;
+    this.spentRange.set(range);
+    this.loadSpentSummary();
+  }
+
+  // Separate from loadTrips/isLoading — this is a secondary, non-blocking
+  // signal, so a failure here shouldn't stop the dashboard from rendering.
+  loadSpentSummary(): void {
+    this.expenseService.getSpentSummary(this.spentRange()).subscribe({
+      next: (spent) => this.periodSpent.set(spent),
+      error: () => { /* non-critical: spent card just won't show a figure */ },
     });
   }
 

@@ -9,39 +9,109 @@
     <p class="text-sm text-muted-foreground mt-0.5">Overview of your travel activity</p>
   </div>
 
-  <!-- Unsettled balances banner -->
-  @if (unsettledSummary().tripCount > 0) {
-  <div class="flex items-center gap-2.5 bg-secondary/10 border border-secondary/30 rounded-xl px-4 py-3 mb-8 text-sm">
-    <svg class="w-4 h-4 text-secondary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v4M12 16h.01" />
-    </svg>
-    <span class="text-foreground">
-      You owe
-      @for (part of unsettledSummary().parts; track part.currency; let last = $last) {
-      <span class="font-semibold">{{ part.amount | vlCurrency:part.currency }}</span>{{ !last ? ' + ' : '' }}
-      }
-      across {{ unsettledSummary().tripCount }} trip{{ unsettledSummary().tripCount !== 1 ? 's' : '' }}
-    </span>
-  </div>
-  }
-
   <!-- Stats -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-    <div class="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-      <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Active Trips</p>
-      <p class="text-3xl font-bold text-primary">{{ stats().activeTrips }}</p>
-    </div>
-    <div class="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-      <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Total Budget</p>
-      <p class="text-3xl font-bold text-foreground">{{ stats().totalBudget | currency:'INR':'symbol' }}
+    <!-- Current Trip -->
+    @if (hasOngoingConflict()) {
+    <div class="bg-card border border-destructive/30 rounded-xl p-5">
+      <div class="flex gap-2 items-center mb-2">
+        <div class="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+          <svg class="w-5 h-5 text-destructive" lucideTriangleAlert></svg>
+        </div>
+        <p class="text-xs font-medium text-destructive tracking-wider">Current Trip</p>
+      </div>
+
+      <p class="text-sm font-semibold text-foreground mb-1">{{ ongoingTrips().length }} trips are marked ongoing</p>
+      <p class="text-sm text-muted-foreground mb-3">
+        @for (trip of ongoingTrips(); track trip.id; let last = $last) {
+        {{ trip.name }}{{ !last ? ', ' : '' }}
+        }
       </p>
+      <p class="text-xs text-muted-foreground">Mark all but one as completed below to fix this.</p>
     </div>
-    <div class="bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-      <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Total Spent</p>
-      <p class="text-3xl font-bold text-foreground">{{ stats().totalSpent | currency:'INR':'symbol' }}
+    }
+    @else if (currentTrip(); as currentTrip) {
+    <div
+      class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
+      <div class="flex gap-2 items-center mb-2">
+        <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+          <svg class="w-5 h-5 text-accent" lucidePlane></svg>
+        </div>
+        <p class="text-xs font-medium text-muted-foreground tracking-wider">Current Trip</p>
+      </div>
+
+      <p class="text-lg font-bold text-foreground">{{ currentTrip.name }}</p>
+      <p class="text-sm text-muted-foreground mb-4">{{ currentTrip.destination }}, {{ currentTrip.country }}</p>
+
+      <p class="text-sm text-muted-foreground mt-auto mb-3">
+        <span class="font-semibold text-foreground">{{ currentTrip.spent | vlCurrency:currentTrip.currency }}</span>
+        of {{ currentTrip.budget | vlCurrency:currentTrip.currency }} spent
       </p>
+
+      <button type="button" (click)="viewExpenses(currentTrip.id)"
+        class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
+        + Add Expense
+      </button>
+    </div>
+    }
+    @else {
+    <div class="bg-card border border-border rounded-xl p-5">
+      <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Current Trip</p>
+      <p class="text-sm text-muted-foreground mt-2">No trip in progress right now.</p>
+    </div>
+    }
+
+    <!-- Upcoming Trip -->
+    @if(upcomingTrip()) {
+    <a class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200 group"
+      [routerLink]="['expenses/', upcomingTrip()?.id]">
+      <div class="flex gap-2">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <svg lucideCalendarClock class="w-5 h-5 text-primary"></svg>
+        </div>
+        <p class="text-xs font-medium text-muted-foreground tracking-wider mb-2">Upcoming Trips</p>
+      </div>
+
+      <p class="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{{
+        upcomingTrip()?.name }}</p>
+      <div class="flex gap-1 mb-4">
+        <p class="text-sm text-muted-foreground">{{ upcomingTrip()?.destination }}</p>,
+        <p class="text-sm text-muted-foreground">{{ upcomingTrip()?.country }}</p>
+      </div>
+
+      <p class="mt-auto text-xl font-bold text-primary">{{ upcomingTrip()?.upcomingDates }}
+        <span class="text-muted-foreground text-sm font-normal"> days to go</span>
+      </p>
+    </a>
+    }
+    @else {
+    <p class="text-sm text-muted-foreground mt-2">
+      Nothing planned yet — start dreaming.
+    </p>
+    }
+    <!-- Spent -->
+    <div class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
+      <div class="flex gap-2 items-center mb-2">
+        <div class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+          <svg class="w-5 h-5 text-secondary" lucideWallet></svg>
+        </div>
+        <p class="text-xs font-medium text-muted-foreground tracking-wider">Spent</p>
+      </div>
+
+      <p class="text-3xl font-bold text-foreground">{{ periodSpent() | currency:'INR':'symbol' }}</p>
+      <p class="text-xs text-muted-foreground mb-4">{{ periodLabel() }}</p>
+
+      <div class="mt-auto flex items-center gap-1 bg-muted rounded-lg p-1">
+        @for (option of spentRangeOptions; track option.value) {
+        <button type="button" (click)="setSpentRange(option.value)"
+          class="flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 cursor-pointer"
+          [class.bg-card]="spentRange() === option.value" [class.shadow-sm]="spentRange() === option.value"
+          [class.text-foreground]="spentRange() === option.value"
+          [class.text-muted-foreground]="spentRange() !== option.value">
+          {{ option.label }}
+        </button>
+        }
+      </div>
     </div>
   </div>
 
@@ -176,7 +246,8 @@
             </div>
             <div class="text-right">
               <p class="text-primary-foreground/70 uppercase tracking-wider mb-1">Left</p>
-              <p class="font-bold text-primary-foreground text-lg">{{ getRemainingAmount(trip) | vlCurrency:trip.currency }}
+              <p class="font-bold text-primary-foreground text-lg">{{ getRemainingAmount(trip) |
+                vlCurrency:trip.currency }}
               </p>
             </div>
           </div>
@@ -186,8 +257,8 @@
           </div>
           <div class="relative flex items-center justify-between mt-2">
             <span class="text-[11px] text-primary-foreground/70">Expenses Progress</span>
-            <span
-              class="text-[11px] font-semibold text-primary-foreground bg-white/20 rounded-full px-2 py-0.5">{{ getBudgetPercentage(trip) }}% USED</span>
+            <span class="text-[11px] font-semibold text-primary-foreground bg-white/20 rounded-full px-2 py-0.5">{{
+              getBudgetPercentage(trip) }}% USED</span>
           </div>
         </div>
 
