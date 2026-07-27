@@ -19,7 +19,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$root = $PSScriptRoot
+$root = Split-Path $PSScriptRoot -Parent
 $libRoot = Join-Path $root "voyage-lib"
 $libDist = Join-Path $libRoot "dist\voyage-lib"
 

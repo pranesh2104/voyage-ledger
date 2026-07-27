@@ -29,6 +29,11 @@ export const appRoutes: Route[] = [
         data: { title: 'Expenses' },
       },
       {
+        path: 'my-journey',
+        loadComponent: () => import('./features/my-journey/components/my-journey/my-journey').then((m) => m.MyJourney),
+        data: { title: 'My Journey' }
+      },
+      {
         path: 'account',
         loadComponent: () =>
           import('./features/account/components/account/account.component').then((m) => m.AccountComponent),
