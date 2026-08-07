@@ -1,9 +1,8 @@
 import { Component, DestroyRef, OnDestroy, OnInit, WritableSignal, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AvatarComponent, SnackbarService } from 'voyage-lib';
 import { AuthService } from '../../../auth/services/auth';
-import { EMAIL_PATTERN, PASSWORD_PATTERN } from '../../../auth/constants/auth.constant';
+import { PASSWORD_PATTERN } from '../../../auth/constants/auth.constant';
 import { ALLOWED_AVATAR_TYPES, MAX_AVATAR_BYTES } from '../../constants/account.constant';
 import { email, form, FormField, maxLength, minLength, pattern, required, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
@@ -16,9 +15,6 @@ import { firstValueFrom } from 'rxjs';
   styleUrls: ['./account.component.scss'],
 })
 export class AccountComponent implements OnInit, OnDestroy {
-  // isSavingProfile = signal(false);
-  // isSavingEmail = signal(false);
-  // isSavingPassword = signal(false);
 
   currentEmail = signal('');
 
