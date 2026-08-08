@@ -1,5 +1,4 @@
 import { Component, DestroyRef, OnDestroy, OnInit, WritableSignal, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AvatarComponent, SnackbarService } from 'voyage-lib';
 import { AuthService } from '../../../auth/services/auth';
 import { PASSWORD_PATTERN } from '../../../auth/constants/auth.constant';
@@ -10,7 +9,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ReactiveFormsModule, AvatarComponent, FormField],
+  imports: [AvatarComponent, FormField],
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.scss'],
 })
@@ -41,7 +40,6 @@ export class AccountComponent implements OnInit, OnDestroy {
     if (strength === 3) return 'medium';
     return 'strong';
   });
-  // private passwordValue = signal('');
 
   profileModel = signal({ displayName: '', userName: '' });
 
@@ -74,10 +72,8 @@ export class AccountComponent implements OnInit, OnDestroy {
     })
   });
 
-  private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly snackbarService = inject(SnackbarService);
-  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     const user = this.authService.currentuser();
