@@ -57,7 +57,7 @@
     </div>
     <!-- Upcoming Trip -->
     <a class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200 group"
-      [routerLink]="upcomingTrip() ? ['expenses/', upcomingTrip()?.id] : null">
+      [routerLink]="upcomingTrip() && upcomingTrip()?.id ? ['expenses/', upcomingTrip()?.id] : null">
       <div class="flex gap-2 items-center mb-2">
         <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <svg lucideCalendarClock class="w-5 h-5 text-primary"></svg>
@@ -73,7 +73,8 @@
       </div>
 
       <p class="text-sm text-muted-foreground">
-        <span class="font-semibold text-foreground">{{ upcomingTrip?.budget | vlCurrency:upcomingTrip?.currency
+        <span class="font-semibold text-foreground">{{ upcomingTrip.budget |
+          vlCurrency:upcomingTrip.currency
           }}</span>
         budget
       </p>

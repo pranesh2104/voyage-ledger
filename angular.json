@@ -2,8 +2,8 @@
 	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
 	"version": 1,
 	"cli": {
-    "packageManager": "pnpm",
-    "analytics": false
+		"packageManager": "pnpm",
+		"analytics": false
 	},
 	"newProjectRoot": "projects",
 	"projects": {
@@ -16,7 +16,12 @@
 			"architect": {
 				"build": {
 					"builder": "@angular-architects/native-federation:build",
-					"options": {},
+					"options": {
+						"entryPoints": [
+							"src/main.ts"
+						],
+						"projectName": "voyage-ledger"
+					},
 					"configurations": {
 						"production": {
 							"target": "voyage-ledger:esbuild:production"
@@ -35,7 +40,11 @@
 						"rebuildDelay": 500,
 						"dev": true,
 						"cacheExternalArtifacts": false,
-						"port": 0
+						"port": 0,
+						"entryPoints": [
+							"src/main.ts"
+						],
+						"projectName": "voyage-ledger"
 					}
 				},
 				"test": {
