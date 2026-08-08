@@ -1,26 +1,19 @@
-import { Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, OnDestroy, OnInit, WritableSignal, computed, inject, signal } from '@angular/core';
 import { AvatarComponent, SnackbarService } from 'voyage-lib';
 import { AuthService } from '../../../auth/services/auth';
-import { EMAIL_PATTERN, PASSWORD_PATTERN } from '../../../auth/constants/auth.constant';
+import { PASSWORD_PATTERN } from '../../../auth/constants/auth.constant';
 import { ALLOWED_AVATAR_TYPES, MAX_AVATAR_BYTES } from '../../constants/account.constant';
+import { email, form, FormField, maxLength, minLength, pattern, required, submit, validate } from '@angular/forms/signals';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ReactiveFormsModule, AvatarComponent],
+  imports: [AvatarComponent, FormField],
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.scss'],
 })
 export class AccountComponent implements OnInit, OnDestroy {
-  profileForm!: FormGroup;
-  emailForm!: FormGroup;
-  passwordForm!: FormGroup;
-
-  isSavingProfile = signal(false);
-  isSavingEmail = signal(false);
-  isSavingPassword = signal(false);
 
   currentEmail = signal('');
 
@@ -35,7 +28,7 @@ export class AccountComponent implements OnInit, OnDestroy {
   showConfirmPassword = signal(false);
 
   passwordStrength = computed<'weak' | 'medium' | 'strong' | ''>(() => {
-    const password = this.passwordValue();
+    const password = this.passwordModel().password;
     if (!password) return '';
     if (password.length < 8) return 'weak';
     let strength = 0;
@@ -47,57 +40,51 @@ export class AccountComponent implements OnInit, OnDestroy {
     if (strength === 3) return 'medium';
     return 'strong';
   });
-  private passwordValue = signal('');
 
-  private readonly fb = inject(FormBuilder);
+  profileModel = signal({ displayName: '', userName: '' });
+
+  emailModel: WritableSignal<{ email: string }> = signal({ email: '' });
+
+  passwordModel: WritableSignal<{ password: string, confirmPassword: string }> = signal({ password: '', confirmPassword: '' });
+
+  profileForm = form(this.profileModel, (profileSchema) => {
+    required(profileSchema.displayName, { message: 'Display name is required.' });
+    maxLength(profileSchema.displayName, 20, { message: 'Must be less than 20 characters.' });
+    required(profileSchema.userName, { message: 'User name is required.' });
+    maxLength(profileSchema.userName, 20, { message: 'Must be less than 20 characters.' });
+  });
+
+  emailForm = form(this.emailModel, (emailSchema) => {
+    required(emailSchema.email, { message: 'Email is required.' });
+    email(emailSchema.email, { message: 'Enter a valid email address.' });
+  });
+
+  passwordForm = form(this.passwordModel, (passwordSchema) => {
+    required(passwordSchema.password, { message: 'Password is required.' });
+    minLength(passwordSchema.password, 8, { message: 'Must be at least 8 characters.' });
+    pattern(passwordSchema.password, PASSWORD_PATTERN, { message: 'Must contain uppercase, lowercase, number, and special character.' });
+    required(passwordSchema.confirmPassword, { message: 'Please confirm your new password.' });
+    validate(passwordSchema.confirmPassword, ({ value, valueOf }) => {
+      if (value() !== valueOf(passwordSchema.password)) {
+        return { kind: 'password-mismatch', message: 'Passwords are not identical' }
+      }
+      return undefined;
+    })
+  });
+
   private readonly authService = inject(AuthService);
   private readonly snackbarService = inject(SnackbarService);
-  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     const user = this.authService.currentuser();
     const { display_name, username, email, avatar_url } = user || {};
 
-    this.profileForm = this.fb.group({
-      display_name: [display_name ?? '', [Validators.required, Validators.maxLength(100)]],
-      username: [username ?? '', [Validators.required, Validators.maxLength(50)]],
-    });
+    this.profileModel.set({ displayName: display_name ?? '', userName: username ?? '' });
 
     this.displayName.set(display_name ?? username ?? '');
     this.avatarUrl.set(avatar_url ?? null);
 
     this.currentEmail.set(email ?? '');
-    this.emailForm = this.fb.group({
-      email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
-    });
-
-    this.passwordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(PASSWORD_PATTERN)]],
-      confirmPassword: ['', Validators.required],
-    }, { validators: this.passwordMatchValidator });
-
-    this.passwordForm.get('password')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(value => this.passwordValue.set(value ?? ''));
-  }
-
-  passwordMatchValidator(form: FormGroup) {
-    const password = form.get('password')?.value;
-    const confirmPassword = form.get('confirmPassword')?.value;
-    if (password && confirmPassword && password !== confirmPassword) {
-      return { passwordMismatch: true };
-    }
-    return null;
-  }
-
-  get displayNameControl() { return this.profileForm.get('display_name'); }
-  get usernameControl() { return this.profileForm.get('username'); }
-  get emailControl() { return this.emailForm.get('email'); }
-  get passwordControl() { return this.passwordForm.get('password'); }
-  get confirmPasswordControl() { return this.passwordForm.get('confirmPassword'); }
-
-  hasPasswordMismatch(): boolean {
-    return !!(this.passwordForm.hasError('passwordMismatch') && this.confirmPasswordControl?.touched);
   }
 
   togglePasswordVisibility(): void {
@@ -108,58 +95,59 @@ export class AccountComponent implements OnInit, OnDestroy {
     this.showConfirmPassword.update(v => !v);
   }
 
-  saveProfile(): void {
-    this.profileForm.markAllAsTouched();
-    if (!this.profileForm.valid || this.isSavingProfile()) return;
-
-    this.isSavingProfile.set(true);
-    const { display_name, username } = this.profileForm.value;
-    this.authService.updateProfile(display_name, username).subscribe({
-      next: (res) => {
-        this.isSavingProfile.set(false);
-        this.authService.setCurrentUser(res.data.user);
+  async onSaveProfile(event: Event): Promise<void> {
+    event.preventDefault();
+    await submit(this.profileForm, async (profileForm) => {
+      try {
+        const { displayName, userName } = this.profileForm().value();
+        const userResponse = await firstValueFrom(this.authService.updateProfile(displayName, userName));
+        this.authService.setCurrentUser(userResponse.data.user);
         this.snackbarService.success('Profile updated successfully.', { duration: 3000 });
-      },
-      error: () => {
-        this.isSavingProfile.set(false);
+        return undefined;
+      } catch (error: any) {
         this.snackbarService.error('Failed to update profile. Please try again.', { duration: 4000 });
-      },
+        return {
+          kind: 'server',
+          fieldTree: profileForm,
+          error: error.error.message || 'Profile update failed due to server error'
+        }
+      }
     });
   }
 
-  saveEmail(): void {
-    this.emailForm.markAllAsTouched();
-    if (!this.emailForm.valid || this.isSavingEmail()) return;
-
-    this.isSavingEmail.set(true);
-    this.authService.updateEmail(this.emailForm.value.email).subscribe({
-      next: () => {
-        this.isSavingEmail.set(false);
-        this.emailForm.reset();
+  async onSaveEmail(event: Event): Promise<void> {
+    event.preventDefault();
+    await submit(this.emailForm, async (emailForm) => {
+      try {
+        await firstValueFrom(this.authService.updateEmail(this.emailForm.email().value()));
         this.snackbarService.success('Confirmation links sent. Check both your current and new email to complete the change.', { duration: 5000 });
-      },
-      error: () => {
-        this.isSavingEmail.set(false);
-        this.snackbarService.error('Failed to update email. Please try again.', { duration: 4000 });
-      },
+        return undefined;
+      } catch (error: any) {
+        this.snackbarService.error(error.error.message || 'Failed to update email. Please try again.', { duration: 4000 });
+        return {
+          kind: 'server',
+          fieldTree: emailForm,
+          error: error.error.message || 'Save email failed due to server error'
+        }
+      }
     });
   }
 
-  savePassword(): void {
-    this.passwordForm.markAllAsTouched();
-    if (!this.passwordForm.valid || this.isSavingPassword()) return;
-
-    this.isSavingPassword.set(true);
-    this.authService.updatePassword(this.passwordForm.value.password).subscribe({
-      next: () => {
-        this.isSavingPassword.set(false);
-        this.passwordForm.reset();
+  async onSavePassword(event: Event): Promise<void> {
+    event.preventDefault();
+    await submit(this.passwordForm, async (passwordForm) => {
+      try {
+        await firstValueFrom(this.authService.updatePassword(this.passwordForm.password().value()));
         this.snackbarService.success('Password updated successfully.', { duration: 3000 });
-      },
-      error: () => {
-        this.isSavingPassword.set(false);
+        return undefined;
+      } catch (error: any) {
         this.snackbarService.error('Failed to update password. Please try again.', { duration: 4000 });
-      },
+        return {
+          kind: 'server',
+          fieldTree: passwordForm.password,
+          error: error.error.message || 'Save password failed due to server error'
+        }
+      }
     });
   }
 

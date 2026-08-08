@@ -12,15 +12,12 @@
   <!-- Stats -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
     <!-- Current Trip -->
-    @if (hasOngoingConflict()) {
-    <div class="bg-card border border-destructive/30 rounded-xl p-5">
-      <div class="flex gap-2 items-center mb-2">
-        <div class="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-          <svg class="w-5 h-5 text-destructive" lucideTriangleAlert></svg>
-        </div>
-        <p class="text-xs font-medium text-destructive tracking-wider">Current Trip</p>
-      </div>
+    <div class="flex flex-col bg-card border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200"
+      [ngClass]="hasOngoingConflict() ? 'border-destructive/30' : 'border-border'">
+      <ng-container
+        *ngTemplateOutlet="currentTripHeader; context : { hasConflict: hasOngoingConflict() }"></ng-container>
 
+      @if (hasOngoingConflict()) {
       <p class="text-sm font-semibold text-foreground mb-1">{{ ongoingTrips().length }} trips are marked ongoing</p>
       <p class="text-sm text-muted-foreground mb-3">
         @for (trip of ongoingTrips(); track trip.id; let last = $last) {
@@ -28,18 +25,8 @@
         }
       </p>
       <p class="text-xs text-muted-foreground">Mark all but one as completed below to fix this.</p>
-    </div>
-    }
-    @else if (currentTrip(); as currentTrip) {
-    <div
-      class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-      <div class="flex gap-2 items-center mb-2">
-        <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-          <svg class="w-5 h-5 text-accent" lucidePlane></svg>
-        </div>
-        <p class="text-sm font-medium text-muted-foreground tracking-wider">Current Trip</p>
-      </div>
-
+      }
+      @else if (currentTrip(); as currentTrip) {
       <p class="text-lg font-bold text-foreground">{{ currentTrip.name }}</p>
       <p class="text-sm text-muted-foreground mb-4">{{ currentTrip.destination }}, {{ currentTrip.country }}</p>
 
@@ -52,26 +39,32 @@
         class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
         + Add Expense
       </button>
-    </div>
-    }
-    @else {
-    <div class="bg-card border border-border rounded-xl p-5">
-      <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Current Trip</p>
-      <p class="text-sm text-muted-foreground mt-2">No trip in progress right now.</p>
-    </div>
-    }
+      }
+      @else {
+      <div class="flex-1 flex flex-col items-center justify-center text-center gap-1 py-2">
+        <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-1">
+          <svg class="w-5 h-5 text-muted-foreground" lucidePlane></svg>
+        </div>
+        <p class="text-sm font-medium text-foreground">No trip in progress</p>
+        <p class="text-xs text-muted-foreground">Start one to see it here</p>
+      </div>
 
+      <button type="button" (click)="createTrip()"
+        class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-150 cursor-pointer">
+        + Create Trip
+      </button>
+      }
+    </div>
     <!-- Upcoming Trip -->
-    @if(upcomingTrip(); as upcomingTrip) {
     <a class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200 group"
-      [routerLink]="['expenses/', upcomingTrip?.id]">
+      [routerLink]="upcomingTrip() && upcomingTrip()?.id ? ['expenses/', upcomingTrip()?.id] : null">
       <div class="flex gap-2 items-center mb-2">
         <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <svg lucideCalendarClock class="w-5 h-5 text-primary"></svg>
         </div>
         <p class="text-sm font-medium text-muted-foreground tracking-wider">Upcoming Trips</p>
       </div>
-
+      @if(upcomingTrip(); as upcomingTrip) {
       <p class="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{{
         upcomingTrip?.name }}</p>
       <div class="flex gap-1 mb-4">
@@ -80,20 +73,26 @@
       </div>
 
       <p class="text-sm text-muted-foreground">
-        <span class="font-semibold text-foreground">{{ upcomingTrip?.budget | vlCurrency:upcomingTrip?.currency }}</span>
+        <span class="font-semibold text-foreground">{{ upcomingTrip.budget |
+          vlCurrency:upcomingTrip.currency
+          }}</span>
         budget
       </p>
 
       <p class="mt-auto text-xl font-bold text-primary">{{ upcomingTrip?.upcomingDates }}
         <span class="text-muted-foreground text-sm font-normal"> days to go</span>
       </p>
+      }
+      @else {
+      <div class="flex-1 flex flex-col items-center justify-center text-center gap-1 py-2">
+        <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-1">
+          <svg lucideCalendarClock class="w-5 h-5 text-muted-foreground"></svg>
+        </div>
+        <p class="text-sm font-medium text-foreground">Nothing planned yet</p>
+        <p class="text-xs text-muted-foreground">Start dreaming up your next trip</p>
+      </div>
+      }
     </a>
-    }
-    @else {
-    <p class="text-sm text-muted-foreground mt-2">
-      Nothing planned yet — start dreaming.
-    </p>
-    }
     <!-- Spent -->
     <div
       class="flex flex-col bg-card border border-border rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
@@ -394,3 +393,18 @@
 
 </div>
 }
+
+<ng-template #currentTripHeader let-hasConflict="hasConflict">
+  <div class="flex gap-2 items-center mb-2">
+    <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+      @if(hasConflict) {
+      <svg class="w-5 h-5 text-destructive" lucideTriangleAlert></svg>
+      }
+      @else {
+      <svg class="w-5 h-5 text-accent" lucidePlane></svg>
+      }
+    </div>
+    <p class="text-sm font-medium tracking-wider"
+      [ngClass]="hasConflict ? 'text-destructive' : 'text-muted-foreground'">Current Trip</p>
+  </div>
+</ng-template>

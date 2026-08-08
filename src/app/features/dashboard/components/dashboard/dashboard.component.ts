@@ -33,7 +33,9 @@ export class DashboardComponent implements OnInit {
 
   spentRange = signal<SpentRangeOption>('month');
 
-  periodSpent = signal(0);
+  spentSummary = signal<Record<SpentRangeOption, number>>({ today: 0, week: 0, month: 0 });
+
+  periodSpent = computed(() => this.spentSummary()[this.spentRange()]);
 
   periodLabel = computed(() => this.spentRange() === 'today' ? 'today' : `this ${this.spentRange()}`);
 
@@ -174,16 +176,16 @@ export class DashboardComponent implements OnInit {
   }
 
   setSpentRange(range: SpentRangeOption): void {
-    if (range === this.spentRange()) return;
     this.spentRange.set(range);
-    this.loadSpentSummary();
   }
 
   // Separate from loadTrips/isLoading — this is a secondary, non-blocking
   // signal, so a failure here shouldn't stop the dashboard from rendering.
+  // Fetches all three ranges in one call so switching tabs is instant and
+  // doesn't re-hit the API.
   loadSpentSummary(): void {
-    this.expenseService.getSpentSummary(this.spentRange()).subscribe({
-      next: (spent) => this.periodSpent.set(spent),
+    this.expenseService.getSpentSummary().subscribe({
+      next: (summary) => this.spentSummary.set(summary),
       error: () => { /* non-critical: spent card just won't show a figure */ },
     });
   }

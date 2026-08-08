@@ -8,7 +8,7 @@
     </div>
   }
 
-  <form [formGroup]="tripForm" (ngSubmit)="onSubmit()" class="space-y-4"
+  <form (submit)="onSubmit($event)" class="space-y-4"
     [class.opacity-40]="isLoadingTrip()" [class.pointer-events-none]="isLoadingTrip()">
 
     <!-- Card: Basic Info -->
@@ -21,15 +21,12 @@
         <!-- Trip Name -->
         <div>
           <label for="name" class="block text-sm font-medium text-foreground mb-1.5">Trip Name</label>
-          <input type="text" id="name" formControlName="name" placeholder="e.g., Paris Weekend"
+          <input type="text" id="name" [formField]="tripForm.name" placeholder="e.g., Paris Weekend"
             class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150 border"
-            [class.border-border]="!(nameControl?.invalid && nameControl?.touched)"
-            [class.border-destructive]="nameControl?.invalid && nameControl?.touched">
-          @if (nameControl?.invalid && nameControl?.touched) {
-            <p class="mt-1.5 text-xs text-destructive">
-              @if (nameControl?.errors?.['required']) { Trip name is required. }
-              @if (nameControl?.errors?.['maxlength']) { Must be less than 100 characters. }
-            </p>
+            [class.border-border]="!(tripForm.name().invalid() && tripForm.name().touched())"
+            [class.border-destructive]="tripForm.name().invalid() && tripForm.name().touched()">
+          @if (tripForm.name().invalid() && tripForm.name().touched()) {
+            <p class="mt-1.5 text-xs text-destructive">{{ tripForm.name().errors()[0]?.message }}</p>
           }
         </div>
 
@@ -37,22 +34,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label for="destination" class="block text-sm font-medium text-foreground mb-1.5">Destination</label>
-            <input type="text" id="destination" formControlName="destination" placeholder="e.g., Paris"
+            <input type="text" id="destination" [formField]="tripForm.destination" placeholder="e.g., Paris"
               class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150 border"
-              [class.border-border]="!(destinationControl?.invalid && destinationControl?.touched)"
-              [class.border-destructive]="destinationControl?.invalid && destinationControl?.touched">
-            @if (destinationControl?.invalid && destinationControl?.touched) {
-              <p class="mt-1.5 text-xs text-destructive">Destination is required.</p>
+              [class.border-border]="!(tripForm.destination().invalid() && tripForm.destination().touched())"
+              [class.border-destructive]="tripForm.destination().invalid() && tripForm.destination().touched()">
+            @if (tripForm.destination().invalid() && tripForm.destination().touched()) {
+              <p class="mt-1.5 text-xs text-destructive">{{ tripForm.destination().errors()[0]?.message }}</p>
             }
           </div>
           <div>
             <label for="country" class="block text-sm font-medium text-foreground mb-1.5">Country</label>
-            <input type="text" id="country" formControlName="country" placeholder="e.g., France"
+            <input type="text" id="country" [formField]="tripForm.country" placeholder="e.g., France"
               class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150 border"
-              [class.border-border]="!(countryControl?.invalid && countryControl?.touched)"
-              [class.border-destructive]="countryControl?.invalid && countryControl?.touched">
-            @if (countryControl?.invalid && countryControl?.touched) {
-              <p class="mt-1.5 text-xs text-destructive">Country is required.</p>
+              [class.border-border]="!(tripForm.country().invalid() && tripForm.country().touched())"
+              [class.border-destructive]="tripForm.country().invalid() && tripForm.country().touched()">
+            @if (tripForm.country().invalid() && tripForm.country().touched()) {
+              <p class="mt-1.5 text-xs text-destructive">{{ tripForm.country().errors()[0]?.message }}</p>
             }
           </div>
         </div>
@@ -69,22 +66,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label for="startDate" class="block text-sm font-medium text-foreground mb-1.5">Start Date</label>
-            <input type="date" id="startDate" formControlName="startDate"
+            <input type="date" id="startDate" [formField]="tripForm.startDate"
               class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150 border"
-              [class.border-border]="!(startDateControl?.invalid && startDateControl?.touched) && !hasDateRangeError()"
-              [class.border-destructive]="(startDateControl?.invalid && startDateControl?.touched) || hasDateRangeError()">
-            @if (startDateControl?.invalid && startDateControl?.touched && startDateControl?.errors?.['required']) {
-              <p class="mt-1.5 text-xs text-destructive">Start date is required.</p>
+              [class.border-border]="!(tripForm.startDate().invalid() && tripForm.startDate().touched()) && !hasDateRangeError()"
+              [class.border-destructive]="(tripForm.startDate().invalid() && tripForm.startDate().touched()) || hasDateRangeError()">
+            @if (tripForm.startDate().invalid() && tripForm.startDate().touched()) {
+              <p class="mt-1.5 text-xs text-destructive">{{ tripForm.startDate().errors()[0]?.message }}</p>
             }
           </div>
           <div>
             <label for="endDate" class="block text-sm font-medium text-foreground mb-1.5">End Date</label>
-            <input type="date" id="endDate" formControlName="endDate"
+            <input type="date" id="endDate" [formField]="tripForm.endDate"
               class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150 border"
-              [class.border-border]="!(endDateControl?.invalid && endDateControl?.touched) && !hasDateRangeError()"
-              [class.border-destructive]="(endDateControl?.invalid && endDateControl?.touched) || hasDateRangeError()">
-            @if (endDateControl?.invalid && endDateControl?.touched && endDateControl?.errors?.['required']) {
-              <p class="mt-1.5 text-xs text-destructive">End date is required.</p>
+              [class.border-border]="!(tripForm.endDate().invalid() && tripForm.endDate().touched()) && !hasDateRangeError()"
+              [class.border-destructive]="(tripForm.endDate().invalid() && tripForm.endDate().touched()) || hasDateRangeError()">
+            @if (tripForm.endDate().invalid() && tripForm.endDate().touched() && !hasDateRangeError()) {
+              <p class="mt-1.5 text-xs text-destructive">{{ tripForm.endDate().errors()[0]?.message }}</p>
             }
           </div>
         </div>
@@ -102,21 +99,18 @@
       <div class="p-6 space-y-5">
         <div>
           <label for="budget" class="block text-sm font-medium text-foreground mb-1.5">Budget</label>
-          <input type="number" id="budget" formControlName="budget" placeholder="e.g., 2000" min="1" step="0.01"
+          <input type="number" id="budget" [formField]="tripForm.budget" placeholder="e.g., 2000" step="0.01"
             class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150 border"
-            [class.border-border]="!(budgetControl?.invalid && budgetControl?.touched)"
-            [class.border-destructive]="budgetControl?.invalid && budgetControl?.touched">
-          @if (budgetControl?.invalid && budgetControl?.touched) {
-            <p class="mt-1.5 text-xs text-destructive">
-              @if (budgetControl?.errors?.['required']) { Budget is required. }
-              @if (budgetControl?.errors?.['min']) { Budget must be at least 1. }
-            </p>
+            [class.border-border]="!(tripForm.budget().invalid() && tripForm.budget().touched())"
+            [class.border-destructive]="tripForm.budget().invalid() && tripForm.budget().touched()">
+          @if (tripForm.budget().invalid() && tripForm.budget().touched()) {
+            <p class="mt-1.5 text-xs text-destructive">{{ tripForm.budget().errors()[0]?.message }}</p>
           }
         </div>
 
         <div>
           <label for="status" class="block text-sm font-medium text-foreground mb-1.5">Status</label>
-          <select id="status" formControlName="status"
+          <select id="status" [formField]="tripForm.status"
             class="w-full px-3.5 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all duration-150">
             @for (status of statusOptions; track $index) {
               <option [value]="status.value">{{ status.label }}</option>

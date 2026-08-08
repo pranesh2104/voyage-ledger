@@ -112,7 +112,7 @@ export class SignUp implements OnInit {
 
   async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
-    const response = await submit(this.signupForm, async (form) => {
+    await submit(this.signupForm, async (form) => {
       try {
         await lastValueFrom(this.authService.signUp(
           form.fullName().value(),
@@ -142,7 +142,5 @@ export class SignUp implements OnInit {
     if (this.signupForm().valid()) {
       this.router.navigate(['/auth/signin']);
     }
-    console.log('form error', this.signupForm())
-    console.log({ response });
   }
 }
