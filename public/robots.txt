@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /expenses
+Disallow: /my-journey
+Disallow: /account
+Disallow: /invites
+Disallow: /auth/verify
+Disallow: /auth/confirm-email
+Disallow: /auth/reset-password
+
+Sitemap: https://www.voyageledger.in/sitemap.xml
