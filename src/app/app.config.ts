@@ -3,6 +3,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, TitleStrategy } from '@angular/router';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { appRoutes } from './app.routes';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { environment } from '../environment/environment';
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
     { provide: TitleStrategy, useClass: CustomTitleStrategy },
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
+    provideClientHydration(withEventReplay()),
   ],
 };

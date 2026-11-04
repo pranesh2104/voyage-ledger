@@ -1,4 +1,5 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 import { Router, RouterModule } from '@angular/router';
 import { catchError, of } from 'rxjs';
@@ -17,8 +18,11 @@ export class LandingPage implements OnInit {
   private router = inject(Router);
 
   private destroyRef = inject(DestroyRef);
+  private platformId = inject(PLATFORM_ID);
 
   ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.authService.getCurrentUser().pipe(
       catchError(() => of(null)),
       takeUntilDestroyed(this.destroyRef)
