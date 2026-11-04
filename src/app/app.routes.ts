@@ -1,3 +1,5 @@
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { Route } from '@angular/router';
 import { loadRemoteModule } from '@angular-architects/native-federation';
 import { authGuard } from '@core/guards/auth.guard';
@@ -25,7 +27,9 @@ export const appRoutes: Route[] = [
       {
         path: 'expenses',
         loadChildren: () =>
-          loadRemoteModule('expenseModule', './Routes').then((m) => m.remoteRoutes),
+          isPlatformServer(inject(PLATFORM_ID))
+            ? []
+            : loadRemoteModule('expenseModule', './Routes').then((m) => m.remoteRoutes),
         data: { title: 'Expenses' },
       },
       {
