@@ -37,6 +37,7 @@
 					"builder": "@angular-architects/native-federation:build",
 					"options": {
 						"target": "voyage-ledger:serve-original:development",
+						"outputPath": "dist/voyage-ledger-dev",
 						"rebuildDelay": 500,
 						"dev": true,
 						"cacheExternalArtifacts": false,
