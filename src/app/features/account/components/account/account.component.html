@@ -6,6 +6,12 @@
     <p class="text-sm text-muted-foreground mt-0.5">Manage your profile, email, and password</p>
   </div>
 
+  @if (demoStore.active()) {
+  <p class="mb-6 px-4 py-3 rounded-lg bg-primary/10 text-sm text-foreground">
+    In the demo you can change your name and username. Photo, email and password changes are turned off.
+  </p>
+  }
+
   <div class="space-y-6">
 
     <!-- Card: Profile -->
@@ -18,6 +24,7 @@
           <vl-avatar [name]="displayName()" [src]="avatarPreviewUrl() || avatarUrl()" size="xl" />
 
           <div class="flex-1 min-w-0">
+            @if (!demoStore.active()) {
             <div class="flex flex-wrap items-center gap-3">
               <label
                 class="px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
@@ -47,6 +54,7 @@
             <p class="mt-2 text-xs text-destructive">{{ avatarError() }}</p>
             } @else {
             <p class="mt-2 text-xs text-muted-foreground">JPEG, PNG, or WebP. Max 2MB.</p>
+            }
             }
           </div>
         </div>
@@ -84,6 +92,7 @@
 
     <!-- Card: Email -->
     <form (submit)="onSaveEmail($event)" class="bg-card border border-border rounded-xl overflow-hidden">
+      <fieldset [disabled]="demoStore.active()" class="min-w-0 disabled:opacity-60">
       <div class="px-6 py-3.5 border-b border-border bg-muted/30">
         <h2 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</h2>
       </div>
@@ -115,10 +124,12 @@
           </button>
         </div>
       </div>
+      </fieldset>
     </form>
 
     <!-- Card: Password -->
     <form (submit)="onSavePassword($event)" class="bg-card border border-border rounded-xl overflow-hidden">
+      <fieldset [disabled]="demoStore.active()" class="min-w-0 disabled:opacity-60">
       <div class="px-6 py-3.5 border-b border-border bg-muted/30">
         <h2 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Password</h2>
       </div>
@@ -195,6 +206,7 @@
           </button>
         </div>
       </div>
+      </fieldset>
     </form>
 
   </div>
