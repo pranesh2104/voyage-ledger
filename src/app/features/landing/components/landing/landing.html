@@ -1,25 +1,26 @@
 <div class="font-sans text-foreground bg-background">
 
   <!-- Navbar -->
-  <nav class="absolute top-0 left-0 w-full z-50 px-6 py-6">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <a routerLink="/" class="flex items-center gap-3 group">
+  <nav class="absolute top-0 left-0 w-full z-50 px-4 py-4 sm:px-6 sm:py-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <a routerLink="/" class="flex items-center gap-2 sm:gap-3 group min-w-0">
         <img src="assets/logo-v2-rupee.svg" alt="VoyageLedger Logo"
-          class="w-10 h-10 transition-transform duration-300" />
-        <div class="text-white text-2xl font-bold tracking-tight">
+          class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 transition-transform duration-300" />
+        <div class="text-white text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap">
           Voyage<span class="text-secondary">Ledger</span>
         </div>
       </a>
 
-      <!-- Auth Buttons -->
-      <div class="flex items-center gap-4">
-        <app-theme-toggle></app-theme-toggle>
+      <!-- Auth Buttons. On phones "Get Started" is hidden: the hero's "Start Your Journey"
+           button right below does the same, and all three don't fit next to the logo. -->
+      <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+        <app-theme-toggle onDark></app-theme-toggle>
         <a routerLink="/auth/signin"
-          class="text-sm font-semibold text-white/90 hover:text-white px-5 py-2.5 transition-colors rounded-full hover:bg-white/10 transition-all duration-300">
+          class="text-sm font-semibold text-white/90 hover:text-white px-3 sm:px-5 py-2.5 whitespace-nowrap transition-colors rounded-full hover:bg-white/10 transition-all duration-300">
           Sign In
         </a>
         <a routerLink="/auth/signup"
-          class="px-5 py-2.5 rounded-full bg-secondary text-white font-bold text-sm hover:bg-secondary/90 transition-all shadow-lg hover:shadow-orange-500/20 transform hover:-translate-y-0.5">
+          class="hidden sm:inline-block whitespace-nowrap px-5 py-2.5 rounded-full bg-secondary text-white font-bold text-sm hover:bg-secondary/90 transition-all shadow-lg hover:shadow-orange-500/20 transform hover:-translate-y-0.5">
           Get Started
         </a>
       </div>
@@ -298,14 +299,15 @@
   <!-- CTA / FOOTER -->
   <footer class="py-24 bg-muted relative">
     <div class="max-w-4xl mx-auto text-center px-6">
-      <!-- Logo Icon Faded -->
-      <div class="absolute left-10 top-10 text-gray-200">
+      <!-- Faded decoration in the corner. Desktop only: on narrow screens the heading
+           reaches the corner and the icon would sit on top of it. -->
+      <div class="hidden md:block absolute left-10 top-10 text-foreground/10 pointer-events-none" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
         </svg>
       </div>
 
-      <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-6">
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
         Ready to Track Your <br />
         <span class="text-primary">Next Adventure?</span>
       </h2>

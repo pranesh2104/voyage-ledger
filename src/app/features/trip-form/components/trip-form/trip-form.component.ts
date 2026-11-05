@@ -52,7 +52,7 @@ export class TripFormComponent {
       const start = valueOf(p.startDate);
       const end = value();
       if (start && end && new Date(start) > new Date(end)) {
-        return { kind: 'dateRange', message: 'End date must be after start date.' };
+        return { kind: 'dateRange', message: "End date can't be before start date." };
       }
       return undefined;
     });
@@ -63,9 +63,13 @@ export class TripFormComponent {
     required(p.status);
   });
 
-  protected readonly hasDateRangeError = computed(() =>
-    this.tripForm.endDate().touched() &&
-    this.tripForm.endDate().errors().some((e) => e.kind === 'dateRange'));
+  /** The validator's date-range message, once the end date is touched; undefined otherwise. */
+  protected readonly dateRangeError = computed(() =>
+    this.tripForm.endDate().touched()
+      ? this.tripForm.endDate().errors().find((e) => e.kind === 'dateRange')?.message
+      : undefined);
+
+  protected readonly hasDateRangeError = computed(() => !!this.dateRangeError());
 
   constructor() {
     // React to tripId changes (edit mode).

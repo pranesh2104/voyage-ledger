@@ -37,6 +37,7 @@
 					"builder": "@angular-architects/native-federation:build",
 					"options": {
 						"target": "voyage-ledger:serve-original:development",
+						"outputPath": "dist/voyage-ledger-dev",
 						"rebuildDelay": 500,
 						"dev": true,
 						"cacheExternalArtifacts": false,
@@ -61,10 +62,20 @@
 							{
 								"glob": "**/*",
 								"input": "public"
+							},
+							{
+								"glob": "maplibre-gl-worker.mjs",
+								"input": "node_modules/maplibre-gl/dist",
+								"output": "maplibre"
 							}
 						],
 						"styles": [
-							"src/styles.scss"
+							"src/styles.scss",
+							{
+								"input": "node_modules/maplibre-gl/dist/maplibre-gl.css",
+								"bundleName": "maplibre-gl",
+								"inject": false
+							}
 						],
 						"polyfills": [
 							"es-module-shims"
@@ -86,6 +97,11 @@
 								{
 									"glob": "federation.manifest.json",
 									"input": "public-prod"
+								},
+								{
+									"glob": "maplibre-gl-worker.mjs",
+									"input": "node_modules/maplibre-gl/dist",
+									"output": "maplibre"
 								}
 							],
 							"budgets": [

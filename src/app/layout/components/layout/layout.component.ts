@@ -44,9 +44,11 @@ export class LayoutComponent {
 
   signOut(): void {
     this.isUserMenuOpen.set(false);
-    this.authService.logout().subscribe({
-      complete: () => this.router.navigate(['/auth/signin']),
-      error: () => this.router.navigate(['/auth/signin']),
-    });
+    // Clear the cached user either way, or authGuard would still let the next visit in.
+    const leave = () => {
+      this.authService.setCurrentUser(null);
+      this.router.navigate(['/auth/signin']);
+    };
+    this.authService.logout().subscribe({ complete: leave, error: leave });
   }
 }

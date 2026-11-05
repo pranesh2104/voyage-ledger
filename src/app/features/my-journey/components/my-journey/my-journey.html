@@ -1,1 +1,148 @@
-<p>my-journey works!</p>
+<div class="p-6 md:p-8 max-w-6xl mx-auto">
+
+  <!-- Page header -->
+  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-foreground tracking-tight">My Journey</h1>
+      <p class="text-sm text-muted-foreground mt-0.5">Every trip you've planned or taken, on one map</p>
+    </div>
+
+    @if (!isLoading() && !loadFailed()) {
+    <div class="flex gap-3">
+      <div class="bg-card border border-border rounded-xl px-4 py-2.5 text-center">
+        <p class="text-lg font-bold text-foreground leading-tight">{{ trips().length }}</p>
+        <p class="text-xs text-muted-foreground">{{ trips().length === 1 ? 'Trip' : 'Trips' }}</p>
+      </div>
+      <div class="bg-card border border-border rounded-xl px-4 py-2.5 text-center">
+        <p class="text-lg font-bold text-foreground leading-tight">{{ locatedTrips().length }}</p>
+        <p class="text-xs text-muted-foreground">On the map</p>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Travel stats: lifetime history (current and upcoming trips are on the Dashboard) -->
+  @if (!isLoading() && !loadFailed() && trips().length > 0) {
+  @let s = stats();
+  @if (s.tripsTaken === 0) {
+  <p class="mb-6 text-sm text-muted-foreground">Your travel stats fill in once your first trip starts.</p>
+  } @else {
+  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="bg-card border border-border rounded-xl p-4">
+      <p class="text-xs font-medium text-muted-foreground">Days travelled</p>
+      <p class="mt-1 text-2xl font-bold text-foreground">{{ s.daysTravelled }}</p>
+      @if (s.longestTrip; as longest) {
+      <p class="mt-1 text-xs text-muted-foreground truncate" [title]="longest.trip.name">
+        Longest: <span class="font-medium text-foreground">{{ longest.trip.name }}</span>
+        · {{ longest.days }} {{ longest.days === 1 ? 'day' : 'days' }}
+      </p>
+      }
+    </div>
+
+    <div class="bg-card border border-border rounded-xl p-4">
+      <p class="text-xs font-medium text-muted-foreground">Places visited</p>
+      <p class="mt-1 text-2xl font-bold text-foreground">{{ s.placeCount }}</p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        in {{ s.countryCount }} {{ s.countryCount === 1 ? 'country' : 'countries' }}
+      </p>
+    </div>
+
+    <div class="bg-card border border-border rounded-xl p-4">
+      <p class="text-xs font-medium text-muted-foreground">Travelling since</p>
+      <p class="mt-1 text-2xl font-bold text-foreground">{{ s.firstYear }}</p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        {{ s.tripsTaken }} {{ s.tripsTaken === 1 ? 'trip' : 'trips' }} taken
+      </p>
+    </div>
+
+    <!-- Trips per year: one bar per year, hover or focus a bar for its count -->
+    <div class="bg-card border border-border rounded-xl p-4">
+      <p class="text-xs font-medium text-muted-foreground">Trips per year</p>
+      <ul class="journey-years mt-2" aria-label="Trips per year">
+        @for (entry of s.tripsPerYear; track entry.year) {
+        <li class="journey-year" tabindex="0"
+          [attr.aria-label]="entry.year + ': ' + entry.trips + (entry.trips === 1 ? ' trip' : ' trips')">
+          <span class="journey-year-tip" aria-hidden="true">
+            {{ entry.trips }} {{ entry.trips === 1 ? 'trip' : 'trips' }}
+          </span>
+          <span class="journey-year-track" aria-hidden="true">
+            <span class="journey-year-bar" [style.height.%]="(entry.trips / maxTripsPerYear()) * 100"></span>
+          </span>
+          <span class="journey-year-label" aria-hidden="true">{{ s.tripsPerYear.length > 5 ? "'" + (entry.year + '').slice(2) : entry.year }}</span>
+        </li>
+        }
+      </ul>
+    </div>
+  </div>
+  }
+  }
+
+  <!-- Map. "isolate" keeps the overlays' z-[1000] inside this box, so they can't cover the mobile sidebar. -->
+  <div class="relative isolate bg-card border border-border rounded-xl overflow-hidden">
+    <div #map class="journey-map h-[60vh] min-h-[420px] w-full" role="region" aria-label="Map of your trips"></div>
+
+    @if (mapUnavailable()) {
+    <div class="absolute inset-0 z-[1001] flex flex-col items-center justify-center gap-1 bg-muted px-6 text-center">
+      <p class="text-sm text-foreground font-medium">Your browser can't display the map.</p>
+      <p class="text-xs text-muted-foreground">It needs WebGL, which is turned off or not supported here.</p>
+    </div>
+    }
+
+    @if (isLoading()) {
+    <div class="absolute inset-0 z-[1000] flex items-center justify-center bg-background/70 backdrop-blur-sm">
+      <vl-loader message="Loading your trips..." />
+    </div>
+    } @else if (loadFailed()) {
+    <div class="absolute inset-0 z-[1000] flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm">
+      <p class="text-sm text-foreground font-medium">Couldn't load your trips.</p>
+      <button type="button" (click)="loadTrips()"
+        class="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer">
+        Try again
+      </button>
+    </div>
+    } @else if (trips().length === 0) {
+    <div class="absolute inset-x-0 bottom-6 z-[1000] flex justify-center px-4 pointer-events-none">
+      <p class="pointer-events-auto bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-muted-foreground shadow-sm">
+        No trips yet. Create one from the dashboard and it will show up here.
+      </p>
+    </div>
+    }
+
+    @if (isLocating()) {
+    <div class="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 bg-card border border-border rounded-full px-3 py-1.5 text-xs text-foreground shadow-sm">
+      <span class="h-3 w-3 animate-spin rounded-full border-2 border-primary/20 border-t-primary"></span>
+      Placing your trips on the map…
+    </div>
+    }
+  </div>
+
+  <!-- Legend -->
+  @if (trips().length > 0) {
+  <div class="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+    @for (option of statusOptions; track option.value) {
+    <span class="flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full" [style.background]="statusColors[option.value].color"></span>
+      {{ option.label }}
+    </span>
+    }
+  </div>
+  }
+
+  <!-- Trips that couldn't be placed -->
+  @if (!isLoading() && !isLocating() && unlocatedTrips().length > 0) {
+  <div class="mt-6 bg-card border border-border rounded-xl p-5">
+    <h2 class="text-sm font-semibold text-foreground">Not on the map</h2>
+    <p class="text-xs text-muted-foreground mt-0.5 mb-3">
+      We couldn't find these places. Editing the trip's destination (for example adding the city or state) usually fixes it.
+    </p>
+    <ul class="divide-y divide-border">
+      @for (trip of unlocatedTrips(); track trip.id) {
+      <li class="flex items-center justify-between gap-3 py-2 text-sm">
+        <span class="font-medium text-foreground truncate">{{ trip.name }}</span>
+        <span class="text-muted-foreground truncate">{{ trip.destination }}{{ trip.country ? ', ' + trip.country : '' }}</span>
+      </li>
+      }
+    </ul>
+  </div>
+  }
+</div>
