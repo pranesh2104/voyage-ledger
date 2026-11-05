@@ -94,3 +94,25 @@
     --color-ring: hsl(210 65% 55%);
   }
 }
+/* Clickable elements get the hand cursor. Tailwind v4 dropped it from buttons (they now
+   use the browser default arrow), so set it once here instead of `cursor-pointer` on every
+   button. In the base layer, so a utility like `cursor-wait` on one element still wins. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  summary,
+  label[for],
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="file"]:not(:disabled)::file-selector-button {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
