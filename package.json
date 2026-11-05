@@ -40,7 +40,7 @@
     "maplibre-gl": "^6.16.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "voyage-lib": "^0.1.7"
+    "voyage-lib": "^0.1.8"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^22.1.3",
