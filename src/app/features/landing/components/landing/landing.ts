@@ -6,6 +6,7 @@ import { catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { AuthService } from '../../../auth/services/auth';
+import { DemoService } from '@core/demo/demo.service';
 
 @Component({
   selector: 'app-landing',
@@ -16,6 +17,7 @@ import { AuthService } from '../../../auth/services/auth';
 export class LandingPage implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private demoService = inject(DemoService);
 
   private destroyRef = inject(DestroyRef);
   private platformId = inject(PLATFORM_ID);
@@ -32,5 +34,9 @@ export class LandingPage implements OnInit {
         this.router.navigate(['/dashboard']);
       }
     });
+  }
+
+  startDemo(): void {
+    this.demoService.start();
   }
 }

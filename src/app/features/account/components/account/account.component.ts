@@ -5,6 +5,7 @@ import { PASSWORD_PATTERN } from '../../../auth/constants/auth.constant';
 import { ALLOWED_AVATAR_TYPES, MAX_AVATAR_BYTES } from '../../constants/account.constant';
 import { email, form, FormField, maxLength, minLength, pattern, required, submit, validate } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
+import { DemoStore } from '@core/demo/demo-store.service';
 
 @Component({
   selector: 'app-account',
@@ -14,6 +15,8 @@ import { firstValueFrom } from 'rxjs';
   styleUrls: ['./account.component.scss'],
 })
 export class AccountComponent implements OnInit, OnDestroy {
+
+  readonly demoStore = inject(DemoStore);
 
   currentEmail = signal('');
 

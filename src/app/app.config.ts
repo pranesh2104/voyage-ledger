@@ -11,11 +11,12 @@ import { CustomTitleStrategy } from '@core/services/title-strategy.service';
 import { authInterceptor } from '@core/interceptors/auth.interceptor';
 import { apiUrlInterceptor } from '@core/interceptors/api-url.interceptor';
 import { API_BASE_URL } from '@core/tokens/api-base-url.token';
+import { demoInterceptor } from '@core/demo/demo.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     { provide: API_BASE_URL, useValue: environment.apiUrl },
-    provideHttpClient(withFetch(), withInterceptors([apiUrlInterceptor, authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([demoInterceptor, apiUrlInterceptor, authInterceptor])),
     { provide: TitleStrategy, useClass: CustomTitleStrategy },
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),

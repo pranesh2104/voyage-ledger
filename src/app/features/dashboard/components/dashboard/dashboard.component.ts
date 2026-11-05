@@ -6,6 +6,7 @@ import { AvatarComponent, ConfirmDialogComponent, CurrencyFormatPipe, DateFormat
 import { TripDialogService } from '@core/services/trip-dialog.service';
 import { TripManagementService } from '@core/services/trip-management.service';
 import { MembersDialogService } from '@core/services/members-dialog.service';
+import { DemoStore } from '@core/demo/demo-store.service';
 import { MAX_VISIBLE_MEMBERS } from '../../constants/dashboard.constant';
 import { BurnRate, UnsettledSummary } from '../../models/dashboard.model';
 import { TRIP_STATUS, TRIP_STATUS_OPTIONS } from '@shared/constants/trip.constant';
@@ -127,6 +128,7 @@ export class DashboardComponent implements OnInit {
   private readonly snackbarService = inject(SnackbarService);
   private readonly membersDialogService = inject(MembersDialogService);
   private readonly tripInviteService = inject(TripInviteService);
+  readonly demoStore = inject(DemoStore);
 
   constructor() {
     effect(() => {

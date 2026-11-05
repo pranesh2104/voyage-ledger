@@ -327,8 +327,10 @@
         </button>
         <!-- Delete Trip (creator only) -->
         @if (trip.isCreator) {
-        <button (click)="deleteTrip(trip.id)"
-          class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150 cursor-pointer">
+        <!-- Sample trips in the demo can be edited but not deleted. -->
+        <button (click)="deleteTrip(trip.id)" [disabled]="demoStore.isSample(trip.id)"
+          [title]="demoStore.isSample(trip.id) ? 'Sample trips can\'t be deleted in the demo' : ''"
+          class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:hover:text-muted-foreground disabled:hover:bg-transparent disabled:hover:border-border">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6" />

@@ -102,6 +102,31 @@
   <!-- ─────────────────────────────────────── MAIN COLUMN -->
   <div class="flex flex-col flex-1 min-w-0">
 
+    <!-- Demo banner: shown while exploring the sample data (see DemoService). -->
+    @if (demoService.active()) {
+    <div role="status"
+      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 px-4 py-2 bg-primary text-primary-foreground text-sm shrink-0">
+      <p class="min-w-0">
+        <span class="font-semibold">Demo mode.</span>
+        <span class="hidden sm:inline ms-1 text-primary-foreground/85">Sample data, changes stay in this browser tab.</span>
+      </p>
+      <div class="flex items-center gap-1 shrink-0">
+        <button type="button" (click)="demoService.reset()"
+          class="px-2.5 py-1 rounded-md text-xs font-medium hover:bg-white/15 transition-colors duration-150">
+          Reset data
+        </button>
+        <button type="button" (click)="demoService.exit()"
+          class="px-2.5 py-1 rounded-md text-xs font-medium hover:bg-white/15 transition-colors duration-150">
+          Exit demo
+        </button>
+        <button type="button" (click)="demoService.exit('/auth/signup')"
+          class="px-3 py-1 rounded-md text-xs font-semibold bg-secondary text-white hover:bg-secondary/90 transition-colors duration-150">
+          Sign up free
+        </button>
+      </div>
+    </div>
+    }
+
     <!-- Toolbar -->
     <header class="flex items-center gap-2 h-16 px-4 bg-card border-b border-border shrink-0">
 

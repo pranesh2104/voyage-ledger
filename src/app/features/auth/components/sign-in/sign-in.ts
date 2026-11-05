@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DemoService } from '@core/demo/demo.service';
 
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { form, required, minLength, email, pattern, FormField, submit } from '@angular/forms/signals';
@@ -40,6 +41,7 @@ export class SignIn implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private snackbarService = inject(SnackbarService);
+  private demoService = inject(DemoService);
 
   /**
    * Where the user was trying to go before being redirected here, so we can
@@ -93,4 +95,7 @@ export class SignIn implements OnInit {
     });
   }
 
+  startDemo(): void {
+    this.demoService.start();
+  }
 }

@@ -7,6 +7,7 @@ import { TripDialogService } from '@core/services/trip-dialog.service';
 import { TripFormDialogComponent } from '../../../features/trip-form/components/trip-form-dialog/trip-form-dialog.component';
 import { MembersDialogComponent } from '../../../features/members/components/members-dialog/members-dialog.component';
 import { DESKTOP_BREAKPOINT } from '../../constants/layout.constant';
+import { DemoService } from '@core/demo/demo.service';
 
 @Component({
   selector: 'app-layout',
@@ -22,6 +23,7 @@ export class LayoutComponent {
   private readonly router = inject(Router);
   readonly authService = inject(AuthService);
   readonly tripDialogService = inject(TripDialogService);
+  readonly demoService = inject(DemoService);
 
   toggleSidebar(): void {
     this.isSidebarExpanded.update((v) => !v);
