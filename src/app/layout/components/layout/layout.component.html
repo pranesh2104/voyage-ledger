@@ -4,9 +4,12 @@
   <div class="fixed inset-0 z-[55] bg-black/40 lg:hidden" (click)="toggleSidebar()"></div>
   }
 
-  <!-- ─────────────────────────────────────── SIDEBAR -->
+  <!-- ─────────────────────────────────────── SIDEBAR
+       Phones: z-[60], above its z-[55] backdrop so the links can be tapped.
+       Desktop: z-auto. It's a flex item, so a z-index would still apply and lift it
+       above the dialogs' backdrop (vl-dialog is z-index 50). -->
   <aside
-    class="fixed lg:static inset-y-0 left-0 z-[60] flex flex-col w-60 shrink-0 bg-card border-r border-border overflow-hidden transition-all duration-300 ease-in-out lg:translate-x-0"
+    class="fixed lg:static inset-y-0 left-0 z-[60] lg:z-auto flex flex-col w-60 shrink-0 bg-card border-r border-border overflow-hidden transition-all duration-300 ease-in-out lg:translate-x-0"
     [class.lg:w-16]="!isSidebarExpanded()" [class.translate-x-0]="isSidebarExpanded()"
     [class.-translate-x-full]="!isSidebarExpanded()">
 
