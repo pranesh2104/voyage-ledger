@@ -1,22 +1,22 @@
 <div class="p-6 md:p-8 max-w-6xl mx-auto">
 
-  <!-- Page header -->
-  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-foreground tracking-tight">My Journey</h1>
-      <p class="text-sm text-muted-foreground mt-0.5">Every trip you've planned or taken, on one map</p>
-    </div>
-
-    @if (!isLoading() && !loadFailed()) {
-    <div class="flex gap-3">
-      <div class="bg-card border border-border rounded-xl px-4 py-2.5 text-center">
-        <p class="text-lg font-bold text-foreground leading-tight">{{ trips().length }}</p>
-        <p class="text-xs text-muted-foreground">{{ trips().length === 1 ? 'Trip' : 'Trips' }}</p>
-      </div>
-      <div class="bg-card border border-border rounded-xl px-4 py-2.5 text-center">
-        <p class="text-lg font-bold text-foreground leading-tight">{{ locatedTrips().length }}</p>
-        <p class="text-xs text-muted-foreground">On the map</p>
-      </div>
+  <!-- Page header: total trips and a count per status. The coloured dots match the
+       map pins, so this line is also the map's legend. Trips that couldn't be placed
+       are listed under the map ("Not on the map"). -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">My Journey</h1>
+    @if (!isLoading() && !loadFailed() && trips().length > 0) {
+    <div class="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
+      <span class="font-semibold text-foreground tabular-nums">
+        {{ trips().length }} {{ trips().length === 1 ? 'trip' : 'trips' }}
+      </span>
+      @for (option of statusOptions; track option.value) {
+      <span class="flex items-center gap-1.5">
+        <span class="h-2.5 w-2.5 rounded-full" [style.background]="statusColors[option.value].color" aria-hidden="true"></span>
+        {{ option.label }}
+        <span class="font-semibold text-foreground tabular-nums">{{ tripsByStatus()[option.value] }}</span>
+      </span>
+      }
     </div>
     }
   </div>
@@ -27,51 +27,41 @@
   @if (s.tripsTaken === 0) {
   <p class="mb-6 text-sm text-muted-foreground">Your travel stats fill in once your first trip starts.</p>
   } @else {
-  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="bg-card border border-border rounded-xl p-4">
-      <p class="text-xs font-medium text-muted-foreground">Days travelled</p>
-      <p class="mt-1 text-2xl font-bold text-foreground">{{ s.daysTravelled }}</p>
+  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <!-- Most spent on one trip, compared within the most-used currency (see journey-stats.ts) -->
+    <div class="bg-card border border-border rounded-xl p-5 min-w-0">
+      <p class="text-sm font-medium text-muted-foreground">Most expensive trip</p>
+      @if (s.mostExpensiveTrip; as priciest) {
+      <p class="mt-1.5 text-3xl font-bold text-foreground tabular-nums truncate">
+        {{ priciest.trip.spent | vlCurrency:priciest.trip.currency }}
+      </p>
+      <p class="mt-1.5 text-sm text-muted-foreground line-clamp-2" [title]="priciest.trip.name">
+        <span class="font-medium text-foreground">{{ priciest.trip.name }}</span>
+        &ngsp;<span class="whitespace-nowrap">· {{ priciest.days }} {{ priciest.days === 1 ? 'day' : 'days' }}</span>
+      </p>
+      } @else {
+      <p class="mt-1.5 text-3xl font-bold text-muted-foreground">—</p>
+      <p class="mt-1.5 text-sm text-muted-foreground">No expenses yet</p>
+      }
+    </div>
+
+    <div class="bg-card border border-border rounded-xl p-5">
+      <p class="text-sm font-medium text-muted-foreground">Days travelled</p>
+      <p class="mt-1.5 text-3xl font-bold text-foreground tabular-nums">{{ s.daysTravelled }}</p>
       @if (s.longestTrip; as longest) {
-      <p class="mt-1 text-xs text-muted-foreground truncate" [title]="longest.trip.name">
+      <p class="mt-1.5 text-sm text-muted-foreground line-clamp-2" [title]="longest.trip.name">
         Longest: <span class="font-medium text-foreground">{{ longest.trip.name }}</span>
-        · {{ longest.days }} {{ longest.days === 1 ? 'day' : 'days' }}
+        &ngsp;<span class="whitespace-nowrap">· {{ longest.days }} {{ longest.days === 1 ? 'day' : 'days' }}</span>
       </p>
       }
     </div>
 
-    <div class="bg-card border border-border rounded-xl p-4">
-      <p class="text-xs font-medium text-muted-foreground">Places visited</p>
-      <p class="mt-1 text-2xl font-bold text-foreground">{{ s.placeCount }}</p>
-      <p class="mt-1 text-xs text-muted-foreground">
+    <div class="bg-card border border-border rounded-xl p-5">
+      <p class="text-sm font-medium text-muted-foreground">Places visited</p>
+      <p class="mt-1.5 text-3xl font-bold text-foreground tabular-nums">{{ s.placeCount }}</p>
+      <p class="mt-1.5 text-sm text-muted-foreground">
         in {{ s.countryCount }} {{ s.countryCount === 1 ? 'country' : 'countries' }}
       </p>
-    </div>
-
-    <div class="bg-card border border-border rounded-xl p-4">
-      <p class="text-xs font-medium text-muted-foreground">Travelling since</p>
-      <p class="mt-1 text-2xl font-bold text-foreground">{{ s.firstYear }}</p>
-      <p class="mt-1 text-xs text-muted-foreground">
-        {{ s.tripsTaken }} {{ s.tripsTaken === 1 ? 'trip' : 'trips' }} taken
-      </p>
-    </div>
-
-    <!-- Trips per year: one bar per year, hover or focus a bar for its count -->
-    <div class="bg-card border border-border rounded-xl p-4">
-      <p class="text-xs font-medium text-muted-foreground">Trips per year</p>
-      <ul class="journey-years mt-2" aria-label="Trips per year">
-        @for (entry of s.tripsPerYear; track entry.year) {
-        <li class="journey-year" tabindex="0"
-          [attr.aria-label]="entry.year + ': ' + entry.trips + (entry.trips === 1 ? ' trip' : ' trips')">
-          <span class="journey-year-tip" aria-hidden="true">
-            {{ entry.trips }} {{ entry.trips === 1 ? 'trip' : 'trips' }}
-          </span>
-          <span class="journey-year-track" aria-hidden="true">
-            <span class="journey-year-bar" [style.height.%]="(entry.trips / maxTripsPerYear()) * 100"></span>
-          </span>
-          <span class="journey-year-label" aria-hidden="true">{{ s.tripsPerYear.length > 5 ? "'" + (entry.year + '').slice(2) : entry.year }}</span>
-        </li>
-        }
-      </ul>
     </div>
   </div>
   }
@@ -115,18 +105,6 @@
     </div>
     }
   </div>
-
-  <!-- Legend -->
-  @if (trips().length > 0) {
-  <div class="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-    @for (option of statusOptions; track option.value) {
-    <span class="flex items-center gap-1.5">
-      <span class="h-2.5 w-2.5 rounded-full" [style.background]="statusColors[option.value].color"></span>
-      {{ option.label }}
-    </span>
-    }
-  </div>
-  }
 
   <!-- Trips that couldn't be placed -->
   @if (!isLoading() && !isLocating() && unlocatedTrips().length > 0) {

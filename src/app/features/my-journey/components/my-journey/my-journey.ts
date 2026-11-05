@@ -41,7 +41,7 @@ import { groupByPlace, isLocated, PlaceGroup } from './trip-groups';
 
 @Component({
   selector: 'app-my-journey',
-  imports: [LoaderComponent],
+  imports: [LoaderComponent, CurrencyFormatPipe],
   templateUrl: './my-journey.html',
   styleUrl: './my-journey.css',
   // MapLibre creates its own DOM (markers, popups, controls), which Angular's emulated
@@ -80,15 +80,17 @@ export class MyJourney {
   /** True when the browser can't draw the map (no WebGL); the trip list still works. */
   protected readonly mapUnavailable = signal(false);
 
-  protected readonly locatedTrips = computed(() => this.trips().filter(isLocated));
+  private readonly locatedTrips = computed(() => this.trips().filter(isLocated));
   /** One entry per pin: trips at the same place share a pin. */
   private readonly placeGroups = computed(() => groupByPlace(this.locatedTrips()));
   protected readonly unlocatedTrips = computed(() => this.trips().filter((trip) => !isLocated(trip)));
   protected readonly stats = computed(() => computeJourneyStats(this.trips()));
-  /** Tallest bar of the trips-per-year chart, for scaling the others. */
-  protected readonly maxTripsPerYear = computed(() =>
-    Math.max(1, ...this.stats().tripsPerYear.map((entry) => entry.trips)),
-  );
+  /** Trips per status, for the header line that doubles as the map legend. */
+  protected readonly tripsByStatus = computed(() => {
+    const counts: Record<Trip['status'], number> = { planning: 0, ongoing: 0, completed: 0 };
+    for (const trip of this.trips()) counts[trip.status]++;
+    return counts;
+  });
 
   constructor() {
     // Browser-only: MapLibre needs WebGL, window and document.
