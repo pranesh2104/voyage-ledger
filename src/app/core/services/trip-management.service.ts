@@ -23,6 +23,21 @@ export class TripManagementService {
     );
   }
 
+  /**
+   * Asks the backend to look up coordinates for trips that don't have them yet.
+   * It handles a few trips per call; `remaining` says how many still need a lookup.
+   */
+  locateTrips(): Observable<{ trips: Trip[]; remaining: number }> {
+    return this.httpService
+      .post<ApiResponse<{ trips: TripDTO[]; remaining: number }>>('/trips/locate', {})
+      .pipe(
+        map(res => ({
+          trips: (res?.data?.trips ?? []).map(dto => this.dtoToTrip(dto)),
+          remaining: res?.data?.remaining ?? 0,
+        }))
+      );
+  }
+
   deleteTrip(tripId: string): Observable<void> {
     return this.httpService.delete<ApiResponse<null>>(`/trips/${tripId}`).pipe(
       map(() => undefined)

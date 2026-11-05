@@ -13,6 +13,9 @@ export default withNativeFederation({
     'rxjs/fetch',
     'rxjs/testing',
     'rxjs/webSocket',
+    // Only the shell's My Journey page uses MapLibre, so bundle it as a normal
+    // lazy chunk instead of a federation-shared package.
+    'maplibre-gl',
     // Add further packages you don't need at runtime
   ],
 

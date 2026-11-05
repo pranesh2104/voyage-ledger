@@ -1,0 +1,319 @@
+/* Unencapsulated (see my-journey.ts), so every rule is scoped by the component selector.
+   MapLibre's own stylesheet is loaded on demand: see ensureMapStyles(). */
+
+app-my-journey .journey-map {
+  background: var(--color-muted);
+  font-family: inherit;
+  z-index: 0; /* keep the map's layers below the app's dialogs and menus */
+}
+
+/* Marker = pin + label. The element is the pin's size, and the label hangs off to
+   the right, so MapLibre's "bottom" anchor lines up with the pin alone.
+   No `position` here: MapLibre's .maplibregl-marker class (on this same element)
+   sets position: absolute, and overriding it stacks markers in page flow. */
+app-my-journey .journey-marker {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+/* Teardrop pin, coloured by trip status. The rotated square's corner pokes ~6px
+   below the box, which the marker's offset compensates for. */
+app-my-journey .journey-pin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50% 50% 50% 0;
+  background: var(--pin-color);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+
+app-my-journey .journey-pin::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+app-my-journey .journey-marker:hover .journey-pin {
+  transform: rotate(-45deg) scale(1.15);
+}
+
+/* Place name next to each pin. */
+app-my-journey .journey-label {
+  position: absolute;
+  left: 34px;
+  top: 3px;
+  white-space: nowrap;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
+}
+
+/* "×3" when several trips share a place. */
+app-my-journey .journey-label-count {
+  margin-left: 5px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Popups follow the app theme (MapLibre's default is always white). */
+app-my-journey .maplibregl-popup-content {
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  font-family: inherit;
+}
+
+app-my-journey .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+app-my-journey .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+app-my-journey .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--color-card);
+}
+
+app-my-journey .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+app-my-journey .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+app-my-journey .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--color-card);
+}
+
+app-my-journey .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--color-card);
+}
+
+app-my-journey .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--color-card);
+}
+
+app-my-journey .maplibregl-popup-close-button {
+  color: var(--color-muted-foreground);
+  font-size: 18px;
+  padding: 0 6px;
+}
+
+app-my-journey .journey-popup p {
+  margin: 0;
+}
+
+/* Several trips at one place: a header, then a list that scrolls if it gets long. */
+app-my-journey .journey-popup-place {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  padding-bottom: 8px;
+  margin-bottom: 8px !important;
+  border-bottom: 1px solid var(--color-border);
+}
+
+app-my-journey .journey-popup-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.dark app-my-journey .journey-popup-list {
+  color-scheme: dark; /* dark scrollbar */
+}
+
+app-my-journey .journey-popup-item + .journey-popup-item {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+app-my-journey .journey-popup-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px !important;
+}
+
+app-my-journey .journey-popup-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+
+app-my-journey .journey-popup-meta {
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin-top: 2px !important;
+}
+
+app-my-journey .journey-popup-link {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+app-my-journey .journey-popup-link:hover {
+  text-decoration: underline;
+}
+
+.dark app-my-journey .journey-popup-link {
+  color: var(--color-primary-light);
+}
+
+/* Map controls (zoom buttons, attribution) in the app's colours. */
+app-my-journey .maplibregl-ctrl-group {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+
+app-my-journey .maplibregl-ctrl-group button + button {
+  border-top-color: var(--color-border);
+}
+
+.dark app-my-journey .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+
+/* MapLibre styles the compact attribution with three classes, so match that specificity. */
+app-my-journey .maplibregl-ctrl.maplibregl-ctrl-attrib,
+app-my-journey .maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: color-mix(in srgb, var(--color-card) 85%, transparent);
+  color: var(--color-muted-foreground);
+}
+
+.dark app-my-journey .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+app-my-journey .maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+
+/* Cluster bubble: nearby places merged at this zoom. Card-coloured centre with a
+   status-coloured ring, so the count stays readable on every status colour and theme. */
+app-my-journey .journey-cluster {
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+
+app-my-journey .journey-cluster-bubble {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  border: 4px solid var(--pin-color);
+  box-shadow: 0 0 0 2px #fff, 0 2px 6px rgb(0 0 0 / 0.35);
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 150ms ease;
+}
+
+app-my-journey .journey-cluster:hover .journey-cluster-bubble {
+  transform: scale(1.12);
+}
+
+app-my-journey .journey-cluster .journey-label {
+  left: 40px;
+  top: 7px;
+}
+
+/* Trips per year: a small single-series bar chart. Each column is the hover/focus
+   target (taller and wider than its bar); the bar grows from the baseline. */
+app-my-journey .journey-years {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 64px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+app-my-journey .journey-year {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  outline: none;
+}
+
+app-my-journey .journey-year-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid var(--color-border); /* baseline */
+}
+
+app-my-journey .journey-year-bar {
+  width: min(100%, 22px);
+  border-radius: 4px 4px 0 0;
+  background: var(--color-primary);
+  transition: opacity 150ms ease;
+}
+
+app-my-journey .journey-years:hover .journey-year-bar {
+  opacity: 0.5;
+}
+
+app-my-journey .journey-year:hover .journey-year-bar,
+app-my-journey .journey-year:focus-visible .journey-year-bar {
+  opacity: 1;
+}
+
+app-my-journey .journey-year:focus-visible .journey-year-track {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+app-my-journey .journey-year-label {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 12px;
+  color: var(--color-muted-foreground);
+}
+
+app-my-journey .journey-year-tip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--color-foreground);
+  color: var(--color-background);
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 1;
+}
+
+app-my-journey .journey-year:hover .journey-year-tip,
+app-my-journey .journey-year:focus-visible .journey-year-tip {
+  opacity: 1;
+}
