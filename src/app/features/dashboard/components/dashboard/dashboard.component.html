@@ -67,10 +67,7 @@
       @if(upcomingTrip(); as upcomingTrip) {
       <p class="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{{
         upcomingTrip?.name }}</p>
-      <div class="flex gap-1 mb-4">
-        <p class="text-sm text-muted-foreground">{{ upcomingTrip?.destination }}</p>,
-        <p class="text-sm text-muted-foreground">{{ upcomingTrip?.country }}</p>
-      </div>
+      <p class="text-sm text-muted-foreground mb-4">{{ upcomingTrip?.destination }}, {{ upcomingTrip?.country }}</p>
 
       <p class="text-sm text-muted-foreground">
         <span class="font-semibold text-foreground">{{ upcomingTrip.budget |
