@@ -1,5 +1,5 @@
 import { Trip } from 'voyage-lib';
-import { computeJourneyStats } from './journey-stats';
+import { computeJourneyStats } from './journey-stats.util';
 
 const trip = (
   id: string,

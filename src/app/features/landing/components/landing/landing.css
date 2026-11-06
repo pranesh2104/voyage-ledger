@@ -1,0 +1,90 @@
+/*
+ * Landing page motion. The hero and background are pure CSS; the scroll reveal needs a
+ * little JavaScript (utils/reveal-on-scroll.util.ts) so it works in every browser, Firefox included.
+ * Keyframes animate `transform`, while Tailwind's hover utilities use the separate
+ * `translate` and `scale` properties, so the hover lift on cards and buttons still works.
+ */
+
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* Hero: each element rises in once, one after another (--enter-delay). */
+.landing-enter {
+  animation: landing-rise 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* Hero background map: a very slow zoom in and out. */
+@keyframes landing-drift {
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.landing-drift {
+  animation: landing-drift 24s ease-in-out infinite alternate;
+}
+
+/* "Why" section: the blurred glow shapes float around slowly. */
+@keyframes landing-float {
+  50% {
+    transform: translate(40px, -30px) scale(1.15);
+  }
+}
+
+.landing-float {
+  animation: landing-float 16s ease-in-out infinite;
+}
+
+.landing-float-reverse {
+  animation: landing-float 18s ease-in-out infinite reverse;
+}
+
+/*
+ * Scroll reveal, run by revealOnScroll with an IntersectionObserver (works in every browser).
+ * Only elements below the fold get "pending": they start hidden and rise in once when
+ * they scroll into view. Elements already on screen at load are left alone, so nothing
+ * flickers. Both classes are removed after the transition, giving the elements back
+ * their own Tailwind transitions (the cards' hover lift).
+ */
+.landing-reveal-pending {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.landing-reveal-pending.landing-revealed {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 650ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Grid items further right start a little later, so a row comes in as a cascade. */
+.landing-reveal-row > :nth-child(3n + 2),
+.landing-reveal-row-4 > :nth-child(4n + 2) {
+  --reveal-delay: 100ms;
+}
+
+.landing-reveal-row > :nth-child(3n + 3),
+.landing-reveal-row-4 > :nth-child(4n + 3) {
+  --reveal-delay: 200ms;
+}
+
+.landing-reveal-row-4 > :nth-child(4n + 4) {
+  --reveal-delay: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-enter,
+  .landing-drift,
+  .landing-float,
+  .landing-float-reverse {
+    animation: none;
+  }
+}

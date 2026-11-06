@@ -1,4 +1,5 @@
-import { distanceInMeters, groupByPlace, isLocated, LocatedTrip } from './trip-groups';
+import { LocatedTrip } from '../models/my-journey.model';
+import { distanceInMeters, groupByPlace, isLocated } from './trip-groups.util';
 
 const trip = (
   id: string,

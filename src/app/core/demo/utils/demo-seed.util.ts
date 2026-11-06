@@ -1,6 +1,6 @@
 import { ExpenseCategory, ExpenseSplitInput, Trip } from 'voyage-lib';
-import { DEMO_INVITE_DAYS, DEMO_STATE_VERSION, SAMPLE_ID_PREFIX } from './demo.constant';
-import { DemoExpense, DemoState, DemoTrip, DemoUser } from './demo.model';
+import { DEMO_INVITE_DAYS, DEMO_STATE_VERSION, SAMPLE_ID_PREFIX } from '../demo.constant';
+import { DemoExpense, DemoState, DemoTrip, DemoUser } from '../demo.model';
 
 const ME = `${SAMPLE_ID_PREFIX}user-me`;
 const ARJUN = `${SAMPLE_ID_PREFIX}user-arjun`;

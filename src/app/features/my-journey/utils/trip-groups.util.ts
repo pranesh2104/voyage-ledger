@@ -1,14 +1,6 @@
 import { Trip } from 'voyage-lib';
-import { SAME_PLACE_METERS, STATUS_PRIORITY } from '../../constants/my-journey.constant';
-
-export type LocatedTrip = Trip & { latitude: number; longitude: number };
-
-export interface PlaceGroup {
-  latitude: number;
-  longitude: number;
-  /** Most active first (ongoing, planning, completed), then the most recent start date. */
-  trips: LocatedTrip[];
-}
+import { SAME_PLACE_METERS, STATUS_PRIORITY } from '../constants/my-journey.constant';
+import { LocatedTrip, PlaceGroup } from '../models/my-journey.model';
 
 export const isLocated = (trip: Trip): trip is LocatedTrip =>
   typeof trip.latitude === 'number' && typeof trip.longitude === 'number';

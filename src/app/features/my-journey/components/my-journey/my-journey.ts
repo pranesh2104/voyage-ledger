@@ -36,8 +36,9 @@ import {
   TRIPS_SOURCE,
   WORLD_VIEW,
 } from '../../constants/my-journey.constant';
-import { computeJourneyStats } from './journey-stats';
-import { groupByPlace, isLocated, PlaceGroup } from './trip-groups';
+import { PlaceGroup } from '../../models/my-journey.model';
+import { computeJourneyStats } from '../../utils/journey-stats.util';
+import { groupByPlace, isLocated } from '../../utils/trip-groups.util';
 
 @Component({
   selector: 'app-my-journey',
