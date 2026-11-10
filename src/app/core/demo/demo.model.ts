@@ -64,3 +64,16 @@ export interface DemoState {
   tripInvites: DemoTripInvite[];
   receivedInvites: DemoReceivedInvite[];
 }
+
+export interface DemoRequest {
+  method: string;
+  /** Path without the query string, e.g. "/trips/sample-trip-goa/expenses". */
+  path: string;
+  body: unknown;
+}
+
+export interface DemoResult {
+  status: number;
+  data: unknown;
+  message?: string;
+}

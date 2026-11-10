@@ -2,8 +2,8 @@ import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DEMO_STATE_VERSION, DEMO_STORAGE_KEY } from './demo.constant';
 import { DemoState } from './demo.model';
-import { buildDemoSeed } from './demo-seed';
-import { isSampleId } from './demo-api';
+import { buildDemoSeed } from './utils/demo-seed.util';
+import { isSampleId } from './utils/demo-api.util';
 
 /**
  * Holds the demo data. It lives in sessionStorage: it survives reloads, stays separate per

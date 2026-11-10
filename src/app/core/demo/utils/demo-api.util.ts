@@ -12,27 +12,14 @@ import {
   TripInviteDTO,
   TripMember,
 } from 'voyage-lib';
-import { DEMO_INVITE_DAYS, DEMO_MESSAGES, DEMO_PLACES, SAMPLE_ID_PREFIX } from './demo.constant';
-import { DemoExpense, DemoState, DemoTrip } from './demo.model';
+import { DEMO_INVITE_DAYS, DEMO_MESSAGES, DEMO_PLACES, SAMPLE_ID_PREFIX } from '../demo.constant';
+import { DemoExpense, DemoRequest, DemoResult, DemoState, DemoTrip } from '../demo.model';
 
 /**
  * Answers API requests from the in-browser demo data instead of the backend. Each handler
  * follows the matching backend controller (response shape, validation, who may do what),
  * so the app can't tell the difference. Handlers change `state` in place; the caller saves it.
  */
-
-export interface DemoRequest {
-  method: string;
-  /** Path without the query string, e.g. "/trips/sample-trip-goa/expenses". */
-  path: string;
-  body: unknown;
-}
-
-export interface DemoResult {
-  status: number;
-  data: unknown;
-  message?: string;
-}
 
 /** A request the backend would reject; becomes an HttpErrorResponse with the same body shape. */
 export class DemoApiError extends Error {

@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpResponse } from '@angular/com
 import { inject } from '@angular/core';
 import { defer, delay, dematerialize, materialize, of, throwError } from 'rxjs';
 import { DEMO_LATENCY_MS } from './demo.constant';
-import { DemoApiError, handleDemoRequest } from './demo-api';
+import { DemoApiError, handleDemoRequest } from './utils/demo-api.util';
 import { DemoStore } from './demo-store.service';
 
 /**

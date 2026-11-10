@@ -1,24 +1,6 @@
 import { Trip } from 'voyage-lib';
-import { DAY_MS } from '../../constants/my-journey.constant';
-
-export interface YearCount {
-  year: number;
-  trips: number;
-}
-
-export interface JourneyStats {
-  /** Trips that have started: completed or ongoing. Planned trips aren't history yet. */
-  tripsTaken: number;
-  /** Calendar days spent travelling. Overlapping trips count each day once. */
-  daysTravelled: number;
-  longestTrip: { trip: Trip; days: number } | null;
-  placeCount: number;
-  countryCount: number;
-  /** Year of the first trip taken, or null before any trip has started. */
-  firstYear: number | null;
-  /** Every year from the first trip to the latest, including years with no trips (0). */
-  tripsPerYear: YearCount[];
-}
+import { DAY_MS } from '../constants/my-journey.constant';
+import { JourneyStats } from '../models/my-journey.model';
 
 /**
  * Trip dates arrive as date-only strings ("2025-04-01"), which `new Date()` reads as
@@ -61,29 +43,36 @@ export function computeJourneyStats(trips: Trip[], today = new Date()): JourneyS
   );
   const countries = new Set(taken.map((trip) => normalize(trip.country)).filter(Boolean));
 
-  const perYear = new Map<number, number>();
-  for (const { start } of ranges) {
-    const year = new Date(start * DAY_MS).getUTCFullYear();
-    perYear.set(year, (perYear.get(year) ?? 0) + 1);
-  }
-  const years = [...perYear.keys()];
-  const firstYear = years.length ? Math.min(...years) : null;
-  const tripsPerYear: YearCount[] = [];
-  if (firstYear !== null) {
-    for (let year = firstYear; year <= Math.max(...years); year++) {
-      tripsPerYear.push({ year, trips: perYear.get(year) ?? 0 });
-    }
-  }
-
   return {
     tripsTaken: taken.length,
     daysTravelled: countUnionDays(ranges),
     longestTrip,
     placeCount: places.size,
     countryCount: countries.size,
-    firstYear,
-    tripsPerYear,
+    mostExpensiveTrip: findMostExpensive(ranges),
   };
+}
+
+/**
+ * Highest spend among trips in the currency used by the most trips. An ongoing trip counts
+ * with what it has spent so far. Its day count is the trip's days so far, like longestTrip.
+ */
+function findMostExpensive(ranges: { trip: Trip; start: number; end: number }[]): JourneyStats['mostExpensiveTrip'] {
+  const spending = ranges.filter(({ trip }) => trip.spent > 0);
+  const tripsPerCurrency = new Map<string, number>();
+  for (const { trip } of spending) tripsPerCurrency.set(trip.currency, (tripsPerCurrency.get(trip.currency) ?? 0) + 1);
+
+  let mainCurrency: string | null = null;
+  for (const [currency, count] of tripsPerCurrency) {
+    if (mainCurrency === null || count > tripsPerCurrency.get(mainCurrency)!) mainCurrency = currency;
+  }
+
+  let most: JourneyStats['mostExpensiveTrip'] = null;
+  for (const { trip, start, end } of spending) {
+    if (trip.currency !== mainCurrency) continue;
+    if (!most || trip.spent > most.trip.spent) most = { trip, days: end - start + 1 };
+  }
+  return most;
 }
 
 /** Days covered by at least one range, so two overlapping trips don't double-count. */

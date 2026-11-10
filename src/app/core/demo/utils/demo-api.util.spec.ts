@@ -1,8 +1,8 @@
 import { ExpenseDTO, Settlement, TripBalance, TripDTO } from 'voyage-lib';
-import { DemoApiError, DemoRequest, handleDemoRequest } from './demo-api';
-import { DEMO_MESSAGES } from './demo.constant';
-import { DemoState } from './demo.model';
-import { buildDemoSeed, equalSplits } from './demo-seed';
+import { DemoApiError, handleDemoRequest } from './demo-api.util';
+import { DEMO_MESSAGES } from '../demo.constant';
+import { DemoRequest, DemoState } from '../demo.model';
+import { buildDemoSeed, equalSplits } from './demo-seed.util';
 
 // A Wednesday, so "this week" (from Monday) and "this month" are different ranges.
 const NOW = new Date(2026, 10, 4, 18, 0);
