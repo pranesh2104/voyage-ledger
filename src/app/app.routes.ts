@@ -3,6 +3,7 @@ import { isPlatformServer } from '@angular/common';
 import { Route } from '@angular/router';
 import { loadRemoteModule } from '@angular-architects/native-federation';
 import { authGuard } from '@core/guards/auth.guard';
+import { joinPageResolver } from './features/join/resolvers/join-page.resolver';
 
 export const appRoutes: Route[] = [
   {
@@ -90,6 +91,14 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./features/auth/components/reset-password/reset-password').then((m) => m.ResetPassword),
     data: { title: 'Reset Password' },
+  },
+  {
+    // Shareable invite link. Public (no authGuard): visitors see the invite first and sign in
+    // to accept. Rendered on the server per request, see app.routes.server.ts.
+    path: 'join/:token',
+    loadComponent: () => import('./features/join/components/join/join').then((m) => m.JoinPage),
+    resolve: { join: joinPageResolver },
+    data: { title: 'Trip Invitation', noindex: true },
   },
   {
     path: '**',

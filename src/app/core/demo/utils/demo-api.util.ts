@@ -441,6 +441,11 @@ const ROUTES: [method: string, pattern: string, handler: Handler][] = [
   ['GET', '/trips/:id/invites', listInvites],
   ['POST', '/trips/:id/invites', createInvite],
   ['DELETE', '/trips/:id/invites/:inviteId', revokeInvite],
+  // Invite links are for sharing with real people, so they don't exist in the demo.
+  ['GET', '/trips/:id/invite-link', notInDemo],
+  ['POST', '/trips/:id/invite-link', notInDemo],
+  ['DELETE', '/trips/:id/invite-link', notInDemo],
+  ['POST', '/invite-links/:token/accept', notInDemo],
   ['GET', '/invites', listMyInvites],
   ['POST', '/invites/:id/accept', acceptInvite],
   ['POST', '/invites/:id/decline', declineInvite],

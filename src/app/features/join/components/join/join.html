@@ -1,0 +1,122 @@
+<main class="min-h-screen bg-background flex flex-col">
+
+  <header class="px-6 py-5">
+    <a routerLink="/" class="inline-flex items-center gap-2.5">
+      <img src="assets/logo-v2-rupee.svg" alt="" class="w-8 h-8" />
+      <span class="text-lg font-bold tracking-tight text-foreground">Voyage<span class="text-secondary">Ledger</span></span>
+    </a>
+  </header>
+
+  <div class="flex-1 flex items-center justify-center px-4 pb-16">
+    <div class="w-full max-w-md">
+
+      @if (validState(); as s) {
+      <article class="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div class="bg-primary px-6 py-6">
+          <p class="text-sm text-blue-100">
+            {{ s.preview.inviterName ? s.preview.inviterName + ' invited you to join' : "You're invited to join" }}
+          </p>
+          <h1 class="text-2xl font-bold text-white tracking-tight mt-1 break-words">{{ s.preview.tripName }}</h1>
+        </div>
+
+        <dl class="px-6 py-5 space-y-3 text-sm">
+          <div class="flex items-center gap-3">
+            <dt class="sr-only">Destination</dt>
+            <svg lucideMapPin class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true"></svg>
+            <dd class="text-foreground">{{ place() }}</dd>
+          </div>
+          <div class="flex items-center gap-3">
+            <dt class="sr-only">Dates</dt>
+            <svg lucideCalendar class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true"></svg>
+            <dd class="text-foreground">
+              {{ dates() }}
+              <span class="text-muted-foreground">· {{ s.preview.startDate | vlTripDuration:s.preview.endDate }}</span>
+            </dd>
+          </div>
+          <div class="flex items-center gap-3">
+            <dt class="sr-only">Members</dt>
+            <svg lucideUsers class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true"></svg>
+            <dd class="text-foreground">
+              {{ s.preview.memberCount }} {{ s.preview.memberCount === 1 ? 'member' : 'members' }} already in
+            </dd>
+          </div>
+        </dl>
+
+        <div class="px-6 pb-6">
+          @switch (authState()) {
+          @case ('signed_in') {
+          <button type="button" (click)="join()" [disabled]="isJoining()"
+            class="w-full h-11 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer disabled:cursor-wait disabled:opacity-60">
+            {{ isJoining() ? 'Joining…' : 'Join trip' }}
+          </button>
+          @if (currentUserName()) {
+          <p class="text-xs text-muted-foreground text-center mt-2">Joining as {{ currentUserName() }}</p>
+          }
+          }
+          @case ('signed_out') {
+          <a routerLink="/auth/signin" [queryParams]="{ returnUrl: returnUrl() }"
+            class="flex items-center justify-center w-full h-11 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150">
+            Sign in to join
+          </a>
+          <a routerLink="/auth/signup" [queryParams]="{ returnUrl: returnUrl() }"
+            class="flex items-center justify-center w-full h-11 mt-2 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors duration-150">
+            New here? Create an account
+          </a>
+          }
+          @default {
+          <!-- Same on the server and on first paint in the browser, until the sign-in check returns. -->
+          <div class="w-full h-11 rounded-lg bg-muted animate-pulse" aria-label="Checking whether you're signed in"></div>
+          }
+          }
+        </div>
+
+        <p class="px-6 py-3 border-t border-border text-xs text-muted-foreground flex items-center gap-1.5">
+          <svg lucideClock class="w-3.5 h-3.5 shrink-0" aria-hidden="true"></svg>
+          This invite link expires {{ expiresIn() }}.
+        </p>
+      </article>
+      } @else if (unusableState(); as s) {
+      <article class="bg-card border border-border rounded-2xl shadow-sm px-6 py-10 text-center">
+        <div class="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+          <svg lucideClock class="w-6 h-6 text-muted-foreground" aria-hidden="true"></svg>
+        </div>
+        <h1 class="text-lg font-semibold text-foreground">{{ unusableTitle(s.reason) }}</h1>
+        <p class="text-sm text-muted-foreground mt-1.5">
+          Ask {{ s.inviterName ?? 'the trip organiser' }} to send you a new invite link.
+        </p>
+        <a routerLink="/"
+          class="inline-flex items-center justify-center h-10 px-5 mt-6 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors duration-150">
+          Go to Voyage Ledger
+        </a>
+      </article>
+      } @else if (state().kind === 'not_found') {
+      <article class="bg-card border border-border rounded-2xl shadow-sm px-6 py-10 text-center">
+        <div class="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+          <svg lucideSearchX class="w-6 h-6 text-muted-foreground" aria-hidden="true"></svg>
+        </div>
+        <h1 class="text-lg font-semibold text-foreground">Invite link not found</h1>
+        <p class="text-sm text-muted-foreground mt-1.5">
+          Check that the link was copied in full, or ask the trip organiser for a new one.
+        </p>
+        <a routerLink="/"
+          class="inline-flex items-center justify-center h-10 px-5 mt-6 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors duration-150">
+          Go to Voyage Ledger
+        </a>
+      </article>
+      } @else {
+      <article class="bg-card border border-border rounded-2xl shadow-sm px-6 py-10 text-center">
+        <div class="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+          <svg lucideCloudOff class="w-6 h-6 text-muted-foreground" aria-hidden="true"></svg>
+        </div>
+        <h1 class="text-lg font-semibold text-foreground">Couldn't load this invite</h1>
+        <p class="text-sm text-muted-foreground mt-1.5">Something went wrong on our side. Please try again in a moment.</p>
+        <button type="button" (click)="retry()" [disabled]="isRetrying()"
+          class="inline-flex items-center justify-center h-10 px-5 mt-6 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer disabled:cursor-wait disabled:opacity-60">
+          {{ isRetrying() ? 'Trying…' : 'Try again' }}
+        </button>
+      </article>
+      }
+
+    </div>
+  </div>
+</main>

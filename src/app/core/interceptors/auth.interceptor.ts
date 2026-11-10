@@ -2,8 +2,12 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { PUBLIC_API } from '../tokens/public-api.token';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // Public endpoints need no cookies, and must not send them so the SSR transfer cache can reuse them.
+  if (req.context.get(PUBLIC_API)) return next(req);
+
   const router = inject(Router);
 
   const authReq = req.clone({ withCredentials: true });

@@ -56,7 +56,17 @@
 					"options": {
 						"browser": "src/main.ts",
 						"server": "src/main.server.ts",
-						"outputMode": "static",
+						"outputMode": "server",
+						"ssr": {
+							"entry": "src/server.ts"
+						},
+						"security": {
+							"allowedHosts": [
+								"www.voyageledger.in",
+								"voyageledger.in",
+								"localhost"
+							]
+						},
 						"tsConfig": "tsconfig.app.json",
 						"assets": [
 							{

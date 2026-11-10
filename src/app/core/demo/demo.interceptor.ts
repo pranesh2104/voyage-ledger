@@ -4,17 +4,21 @@ import { defer, delay, dematerialize, materialize, of, throwError } from 'rxjs';
 import { DEMO_LATENCY_MS } from './demo.constant';
 import { DemoApiError, handleDemoRequest } from './utils/demo-api.util';
 import { DemoStore } from './demo-store.service';
+import { PUBLIC_API } from '../tokens/public-api.token';
 
 /**
  * In demo mode, answers every API call (relative URLs, the ones `apiUrlInterceptor` would
  * send to the backend) from the in-browser demo data. Runs first, so nothing reaches the
  * real API, including requests made by the expense micro-frontend through the shell's
  * HttpClient. Outside demo mode it does nothing.
+ *
+ * Public endpoints (PUBLIC_API, e.g. an invite link's preview) still go to the real API:
+ * they hold no user data, and a real link opened in a demo tab should still show its trip.
  */
 export const demoInterceptor: HttpInterceptorFn = (req, next) => {
   const store = inject(DemoStore);
   const state = store.state;
-  if (!store.active() || !state || !req.url.startsWith('/')) return next(req);
+  if (!store.active() || !state || !req.url.startsWith('/') || req.context.get(PUBLIC_API)) return next(req);
 
   return defer(() => {
     if (req.method === 'POST' && req.url === '/auth/logout') {

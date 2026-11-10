@@ -2,7 +2,7 @@ import { DOCUMENT, Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, RouterStateSnapshot, TitleStrategy } from '@angular/router';
 
-const SITE_ORIGIN = 'https://www.voyageledger.in';
+export const SITE_ORIGIN = 'https://www.voyageledger.in';
 const DEFAULT_TITLE = 'Voyage Ledger - Track Your Travel Expenses';
 
 @Injectable({ providedIn: 'root' })
@@ -20,7 +20,7 @@ export class CustomTitleStrategy extends TitleStrategy {
     this.title.setTitle(title ? `${title} - Voyage Ledger` : DEFAULT_TITLE);
 
     this.updateCanonical(routerState.url);
-    this.updateRobots(deepest.routeConfig?.path === '**');
+    this.updateRobots(deepest.routeConfig?.path === '**' || deepest.data['noindex'] === true);
   }
 
   private deepestChild(route: ActivatedRouteSnapshot): ActivatedRouteSnapshot {
@@ -42,9 +42,12 @@ export class CustomTitleStrategy extends TitleStrategy {
     link.href = href;
   }
 
-  /** Keep the catch-all "not found" page out of the index (avoids soft-404s). */
-  private updateRobots(isNotFound: boolean): void {
-    if (isNotFound) {
+  /**
+   * Keep the catch-all "not found" page (avoids soft-404s) and routes marked
+   * `data: { noindex: true }` (e.g. private invite links) out of the index.
+   */
+  private updateRobots(noindex: boolean): void {
+    if (noindex) {
       this.meta.updateTag({ name: 'robots', content: 'noindex' });
     } else {
       this.meta.removeTag('name="robots"');
