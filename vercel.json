@@ -1,6 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "dist/voyage-ledger/browser",
   "rewrites": [
+    { "source": "/join/:token", "destination": "/api/ssr" },
     { "source": "/(.*)", "destination": "/index.csr.html" }
-  ]
+  ],
+  "functions": {
+    "api/ssr.mjs": {
+      "includeFiles": "dist/voyage-ledger/**"
+    }
+  }
 }
