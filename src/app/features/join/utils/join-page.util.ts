@@ -60,6 +60,19 @@ export function formatTripDates(startDate: string, endDate: string): string {
   return `${DAY_MONTH_YEAR.format(start)} – ${DAY_MONTH_YEAR.format(end)}`;
 }
 
+const DAY_MONTH_ONLY = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+const WEEKDAY = new Intl.DateTimeFormat('en-IN', { weekday: 'short', timeZone: 'UTC' });
+
+/**
+ * One end of the trip for the ticket's Starts / Ends row: { day: "12 Dec", detail: "Sat, 2026" }.
+ * UTC for the same reason as formatTripDates. Null for a date that can't be parsed.
+ */
+export function formatTripEndpoint(date: string): { day: string; detail: string } | null {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
+  return { day: DAY_MONTH_ONLY.format(d), detail: `${WEEKDAY.format(d)}, ${d.getUTCFullYear()}` };
+}
+
 export function formatPlace(destination: string, country: string | null): string {
   return country ? `${destination}, ${country}` : destination;
 }

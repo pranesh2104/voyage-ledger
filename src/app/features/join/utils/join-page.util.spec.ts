@@ -3,6 +3,7 @@ import { TimeoutError } from 'rxjs';
 import { InviteLinkPreview } from '@shared/models/invite-link.model';
 import {
   formatTripDates,
+  formatTripEndpoint,
   httpStatusFor,
   joinPageMeta,
   joinStateFromError,
@@ -76,6 +77,21 @@ describe('formatTripDates', () => {
 
   it('returns an empty string for bad dates', () => {
     expect(formatTripDates('nope', '2026-12-12')).toBe('');
+  });
+});
+
+describe('formatTripEndpoint', () => {
+  it('gives the day and month, then the weekday and year', () => {
+    expect(formatTripEndpoint('2026-12-12')).toEqual({ day: '12 Dec', detail: 'Sat, 2026' });
+    expect(formatTripEndpoint('2026-12-16')).toEqual({ day: '16 Dec', detail: 'Wed, 2026' });
+  });
+
+  it('uses the calendar date, whatever the time zone', () => {
+    expect(formatTripEndpoint('2027-01-01')).toEqual({ day: '1 Jan', detail: 'Fri, 2027' });
+  });
+
+  it('returns null for a bad date', () => {
+    expect(formatTripEndpoint('nope')).toBeNull();
   });
 });
 

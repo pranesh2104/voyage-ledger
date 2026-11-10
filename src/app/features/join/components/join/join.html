@@ -1,9 +1,18 @@
-<main class="min-h-screen bg-background flex flex-col">
+<main class="relative isolate min-h-screen bg-background flex flex-col overflow-hidden">
+  <!--
+    One journey-map background for every invite (start dot → plane over the sea → destination pin),
+    drawn in the app's colours, one file per theme. Composed so that on a phone, where only the strip
+    above and below the card shows, the pin is at the top and the start dot at the bottom.
+  -->
+  <img src="assets/invite-bg-light.svg" alt="" aria-hidden="true" decoding="async"
+    class="invite-bg-light absolute inset-0 -z-10 w-full h-full object-cover" />
+  <img src="assets/invite-bg-dark.svg" alt="" aria-hidden="true" decoding="async"
+    class="invite-bg-dark absolute inset-0 -z-10 w-full h-full object-cover" />
 
-  <header class="px-6 py-5">
-    <a routerLink="/" class="inline-flex items-center gap-2.5">
-      <img src="assets/logo-v2-rupee.svg" alt="" class="w-8 h-8" />
-      <span class="text-lg font-bold tracking-tight text-foreground">Voyage<span class="text-secondary">Ledger</span></span>
+  <header class="px-4 py-5 sm:px-6">
+    <a routerLink="/" class="inline-flex items-center gap-2.5 rounded-full bg-card border border-border pl-2.5 pr-4 py-1.5">
+      <img src="assets/logo-v2-rupee.svg" alt="" class="w-7 h-7" />
+      <span class="text-base font-bold tracking-tight text-foreground">Voyage<span class="text-secondary">Ledger</span></span>
     </a>
   </header>
 
@@ -11,42 +20,59 @@
     <div class="w-full max-w-md">
 
       @if (validState(); as s) {
-      <article class="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-        <div class="bg-primary px-6 py-6">
-          <p class="text-sm text-blue-100">
-            {{ s.preview.inviterName ? s.preview.inviterName + ' invited you to join' : "You're invited to join" }}
+      <!-- A ticket in two halves. join.css cuts real notches where they meet, so the background shows through. -->
+      <article class="drop-shadow-xl">
+        <div class="ticket-top bg-card rounded-t-2xl overflow-hidden">
+          <div class="bg-primary text-primary-foreground px-6 pt-5 pb-6">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-semibold uppercase tracking-[0.14em] opacity-85">Trip invitation</span>
+              <svg lucidePlane class="w-5 h-5" aria-hidden="true"></svg>
+            </div>
+            <p class="text-sm opacity-90 mt-3">
+              {{ s.preview.inviterName ? s.preview.inviterName + ' invited you to join' : "You're invited to join" }}
+            </p>
+            <h1 class="text-3xl font-extrabold tracking-tight mt-1 break-words">{{ s.preview.tripName }}</h1>
+            <p class="flex items-center gap-1.5 text-sm font-medium opacity-95 mt-1.5">
+              <svg lucideMapPin class="w-4 h-4 shrink-0" aria-hidden="true"></svg>
+              {{ place() }}
+            </p>
+          </div>
+
+          @if (tripStart(); as start) {
+          @if (tripEnd(); as end) {
+          <div class="px-6 pt-5 pb-4 flex items-center gap-3">
+            <div class="flex flex-col gap-0.5">
+              <span class="ticket-label">Starts</span>
+              <span class="text-[22px] font-extrabold tracking-tight text-foreground">{{ start.day }}</span>
+              <span class="text-xs text-muted-foreground">{{ start.detail }}</span>
+            </div>
+            <div class="flex-1 min-w-0 flex items-center gap-2">
+              <span class="flex-1 border-t-2 border-dashed border-border" aria-hidden="true"></span>
+              <span class="ticket-pill">{{ s.preview.startDate | vlTripDuration:s.preview.endDate }}</span>
+              <span class="flex-1 border-t-2 border-dashed border-border" aria-hidden="true"></span>
+            </div>
+            <div class="flex flex-col gap-0.5 items-end">
+              <span class="ticket-label">Ends</span>
+              <span class="text-[22px] font-extrabold tracking-tight text-foreground">{{ end.day }}</span>
+              <span class="text-xs text-muted-foreground">{{ end.detail }}</span>
+            </div>
+          </div>
+          }
+          }
+
+          <p class="px-6 pb-6 flex items-center gap-2 text-sm text-foreground">
+            <svg lucideUsers class="w-4.5 h-4.5 text-muted-foreground shrink-0" aria-hidden="true"></svg>
+            <span><strong class="font-bold">{{ s.preview.memberCount }} {{ s.preview.memberCount === 1 ? 'member' : 'members' }}</strong> already in</span>
           </p>
-          <h1 class="text-2xl font-bold text-white tracking-tight mt-1 break-words">{{ s.preview.tripName }}</h1>
         </div>
 
-        <dl class="px-6 py-5 space-y-3 text-sm">
-          <div class="flex items-center gap-3">
-            <dt class="sr-only">Destination</dt>
-            <svg lucideMapPin class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true"></svg>
-            <dd class="text-foreground">{{ place() }}</dd>
-          </div>
-          <div class="flex items-center gap-3">
-            <dt class="sr-only">Dates</dt>
-            <svg lucideCalendar class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true"></svg>
-            <dd class="text-foreground">
-              {{ dates() }}
-              <span class="text-muted-foreground">· {{ s.preview.startDate | vlTripDuration:s.preview.endDate }}</span>
-            </dd>
-          </div>
-          <div class="flex items-center gap-3">
-            <dt class="sr-only">Members</dt>
-            <svg lucideUsers class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true"></svg>
-            <dd class="text-foreground">
-              {{ s.preview.memberCount }} {{ s.preview.memberCount === 1 ? 'member' : 'members' }} already in
-            </dd>
-          </div>
-        </dl>
+        <div class="ticket-stub bg-card rounded-b-2xl px-6 pb-5">
+          <div class="border-t-2 border-dashed border-border mx-2 mb-5" aria-hidden="true"></div>
 
-        <div class="px-6 pb-6">
           @switch (authState()) {
           @case ('signed_in') {
           <button type="button" (click)="join()" [disabled]="isJoining()"
-            class="w-full h-11 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer disabled:cursor-wait disabled:opacity-60">
+            class="w-full h-12 rounded-xl text-[15px] font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150 cursor-pointer disabled:cursor-wait disabled:opacity-60">
             {{ isJoining() ? 'Joining…' : 'Join trip' }}
           </button>
           @if (currentUserName()) {
@@ -55,25 +81,25 @@
           }
           @case ('signed_out') {
           <a routerLink="/auth/signin" [queryParams]="{ returnUrl: returnUrl() }"
-            class="flex items-center justify-center w-full h-11 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150">
+            class="flex items-center justify-center w-full h-12 rounded-xl text-[15px] font-semibold bg-primary text-primary-foreground hover:bg-primary-dark transition-colors duration-150">
             Sign in to join
           </a>
           <a routerLink="/auth/signup" [queryParams]="{ returnUrl: returnUrl() }"
-            class="flex items-center justify-center w-full h-11 mt-2 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors duration-150">
+            class="flex items-center justify-center w-full h-11 mt-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors duration-150">
             New here? Create an account
           </a>
           }
           @default {
           <!-- Same on the server and on first paint in the browser, until the sign-in check returns. -->
-          <div class="w-full h-11 rounded-lg bg-muted animate-pulse" aria-label="Checking whether you're signed in"></div>
+          <div class="w-full h-12 rounded-xl bg-muted animate-pulse" aria-label="Checking whether you're signed in"></div>
           }
           }
-        </div>
 
-        <p class="px-6 py-3 border-t border-border text-xs text-muted-foreground flex items-center gap-1.5">
-          <svg lucideClock class="w-3.5 h-3.5 shrink-0" aria-hidden="true"></svg>
-          This invite link expires {{ expiresIn() }}.
-        </p>
+          <p class="mt-4 text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+            <svg lucideClock class="w-3.5 h-3.5 shrink-0" aria-hidden="true"></svg>
+            This invite link expires {{ expiresIn() }}.
+          </p>
+        </div>
       </article>
       } @else if (unusableState(); as s) {
       <article class="bg-card border border-border rounded-2xl shadow-sm px-6 py-10 text-center">
