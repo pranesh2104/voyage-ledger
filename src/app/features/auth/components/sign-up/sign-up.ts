@@ -85,6 +85,7 @@ export class SignUp implements OnInit {
     const url = this.returnUrl();
     if (!url) return null;
     if (url.startsWith('/invites')) return 'Create an account to view your trip invitation.';
+    if (url.startsWith('/join/')) return 'Create an account to join the trip.';
     return null;
   });
 

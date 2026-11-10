@@ -52,6 +52,7 @@ export class SignIn implements OnInit {
     const url = this.returnUrl();
     if (!url) return null;
     if (url.startsWith('/invites')) return "Sign in to view your trip invitation.";
+    if (url.startsWith('/join/')) return 'Sign in to join the trip.';
     return 'Please sign in to continue where you left off.';
   });
 
