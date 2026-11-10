@@ -15,10 +15,10 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import {
-  LucideCalendar,
   LucideClock,
   LucideCloudOff,
   LucideMapPin,
+  LucidePlane,
   LucideSearchX,
   LucideUsers,
 } from '@lucide/angular';
@@ -29,7 +29,7 @@ import { AuthService } from '../../../auth/services/auth';
 import { JoinAuthState, JoinPageState } from '../../models/join-page.model';
 import {
   formatPlace,
-  formatTripDates,
+  formatTripEndpoint,
   httpStatusFor,
   joinPageMeta,
   joinStateFromError,
@@ -51,14 +51,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
   imports: [
     RouterLink,
     TripDurationPipe,
-    LucideCalendar,
     LucideClock,
     LucideCloudOff,
     LucideMapPin,
+    LucidePlane,
     LucideSearchX,
     LucideUsers,
   ],
   templateUrl: './join.html',
+  styleUrl: './join.css',
 })
 export class JoinPage {
   private readonly route = inject(ActivatedRoute);
@@ -103,9 +104,15 @@ export class JoinPage {
     return s.kind === 'valid' ? formatPlace(s.preview.destination, s.preview.country) : '';
   });
 
-  readonly dates = computed(() => {
+
+  /** The ticket's Starts / Ends row. */
+  readonly tripStart = computed(() => {
     const s = this.state();
-    return s.kind === 'valid' ? formatTripDates(s.preview.startDate, s.preview.endDate) : '';
+    return s.kind === 'valid' ? formatTripEndpoint(s.preview.startDate) : null;
+  });
+  readonly tripEnd = computed(() => {
+    const s = this.state();
+    return s.kind === 'valid' ? formatTripEndpoint(s.preview.endDate) : null;
   });
 
   readonly expiresIn = computed(() => {

@@ -1,0 +1,54 @@
+/*
+ * Background: one file per theme. The app's theme is the `dark` class on <html> (set before first
+ * paint by the script in index.html), not Tailwind's `dark:` variant, which would follow the OS
+ * setting instead. Same pattern as the theme toggle's icons.
+ */
+.invite-bg-dark { display: none; }
+:host-context(.dark) .invite-bg-light { display: none; }
+:host-context(.dark) .invite-bg-dark { display: block; }
+
+/*
+ * The valid-invite card is a ticket in two halves (.ticket-top and .ticket-stub). Each half
+ * masks out a 12px half-circle at the corners where they meet, so the notches are real
+ * holes: the page background shows through, whatever it is. The shadow comes from
+ * `drop-shadow` on the parent, because a mask clips `box-shadow` but a filter follows the
+ * masked shape.
+ */
+.ticket-top {
+  -webkit-mask:
+    radial-gradient(circle 12px at 0 100%, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 12px at 100% 100%, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 12px at 0 100%, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 12px at 100% 100%, #0000 98%, #000) right / 51% 100% no-repeat;
+}
+
+.ticket-stub {
+  -webkit-mask:
+    radial-gradient(circle 12px at 0 0, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 12px at 100% 0, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 12px at 0 0, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 12px at 100% 0, #0000 98%, #000) right / 51% 100% no-repeat;
+}
+
+/* Small caps-style field labels. Mixed towards the text colour, because muted-foreground
+   alone is too faint at 11px (it passes contrast in dark mode, not in light). */
+.ticket-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-muted-foreground) 70%, var(--color-foreground));
+}
+
+/* Trip length on the dashed line between Starts and Ends. Coral, darkened so the 12px text passes contrast. */
+.ticket-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: color-mix(in oklab, var(--color-secondary) 12%, var(--color-card));
+  color: color-mix(in oklab, var(--color-secondary) 60%, var(--color-foreground));
+}
