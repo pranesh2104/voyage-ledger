@@ -15,7 +15,13 @@
     } catch (e) {}
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" type="image/svg+xml" href="assets/logo-v2-rupee.svg" />
+  <!-- Icons: .ico for older browsers and crawlers that only check /favicon.ico, SVG for modern
+       browsers, a 192px PNG for Google Search (it wants a square multiple of 48px), and the
+       Apple touch icon (full-bleed, no rounded corners; iOS applies its own mask). -->
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/svg+xml" href="/assets/logo-v2-rupee.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <meta name="description"
