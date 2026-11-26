@@ -33,6 +33,28 @@ export const CLUSTER_MAX_ZOOM = 14;
 /** Safety stop for the "locate missing trips" loop (each call handles a few trips). */
 export const MAX_LOCATE_CALLS = 10;
 
+// ---- Trip spending view (one trip's expenses on the map) ----
+
+/** Expenses this close together (the same hotel, the same market) share one pin. */
+export const SAME_SPOT_METERS = 40;
+/** Clustered GeoJSON source of the trip's spending spots, and its invisible layer. */
+export const SPENDING_SOURCE = 'trip-spending';
+/** Spots closer than this on screen merge into a bubble, so amount labels don't slide under neighbouring pins. */
+export const SPOT_CLUSTER_RADIUS_PX = 60;
+export const SPOT_CLUSTER_MAX_ZOOM = 16;
+/** The journey path: a GeoJSON line from the first place money was spent to the last. */
+export const PATH_SOURCE = 'trip-path';
+export const PATH_LAYERS = { casing: 'trip-path-casing', line: 'trip-path-line', arrows: 'trip-path-arrows' } as const;
+export const PATH_ARROW_IMAGE = 'trip-path-arrow';
+/** The path fades from the start colour to the end colour, so its direction reads at a glance. */
+export const PATH_COLORS = { start: '#10b981', end: '#6366f1' };
+/** Spot pins grow with the amount spent there, between these sizes. */
+export const SPOT_SIZE_PX = { min: 30, max: 46 };
+/** Don't zoom in closer than this when fitting a trip's spots (a single spot would otherwise fill the map). */
+export const TRIP_VIEW_MAX_ZOOM = 14;
+/** Zoom for a trip with no expense locations: its destination, at about city scale. */
+export const TRIP_VIEW_FALLBACK_ZOOM = 10;
+
 // ---- Trip grouping ----
 
 /** Trips this close together count as the same place and share one pin. */

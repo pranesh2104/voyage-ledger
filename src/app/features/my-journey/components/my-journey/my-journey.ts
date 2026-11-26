@@ -10,12 +10,17 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { distinctUntilChanged, firstValueFrom, map as mapTo } from 'rxjs';
 import type * as MapLibre from 'maplibre-gl';
 import {
+  CATEGORY_ICONS,
   CurrencyFormatPipe,
   DateFormatPipe,
+  Expense,
+  ExpenseService,
+  formatCurrency,
   LoaderComponent,
   Trip,
   TRIP_STATUS_COLORS,
@@ -31,14 +36,21 @@ import {
   MAPLIBRE_STYLESHEET,
   MAPLIBRE_WORKER,
   MAX_LOCATE_CALLS,
+  PATH_COLORS,
   STATUS_BY_PRIORITY,
   STATUS_PRIORITY,
+  TRIP_VIEW_FALLBACK_ZOOM,
   TRIPS_SOURCE,
   WORLD_VIEW,
 } from '../../constants/my-journey.constant';
-import { PlaceGroup } from '../../models/my-journey.model';
+import { PlaceGroup, SpendingDay } from '../../models/my-journey.model';
 import { computeJourneyStats } from '../../utils/journey-stats.util';
 import { groupByPlace, isLocated } from '../../utils/trip-groups.util';
+import { buildJourneyPath, buildSpendingSpots, groupByDay, isExpenseLocated } from '../../utils/trip-spending.util';
+import { TripSpendingLayer } from './trip-spending-layer';
+
+/** Day headings in the trip's expense list: "Mon, 21 Dec". UTC, because expense dates are plain days. */
+const DAY_FORMAT = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
 
 @Component({
   selector: 'app-my-journey',
@@ -51,8 +63,10 @@ import { groupByPlace, isLocated } from '../../utils/trip-groups.util';
 })
 export class MyJourney {
   private readonly tripService = inject(TripService);
+  private readonly expenseService = inject(ExpenseService);
   private readonly tripManagementService = inject(TripManagementService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
 
@@ -70,9 +84,15 @@ export class MyJourney {
   /** Markers currently on the map: place pins and cluster bubbles. */
   private shownMarkers = new Set<MapLibre.Marker>();
   private hasFramedTrips = false;
+  /** Draws the selected trip's spending; created with the map. */
+  private spendingLayer?: TripSpendingLayer;
+  /** The trip whose expenses are loaded or loading, so a repeated selection doesn't reload them. */
+  private shownTripId: string | null = null;
 
   protected readonly statusOptions = TRIP_STATUS_OPTIONS;
   protected readonly statusColors = TRIP_STATUS_COLORS;
+  protected readonly categoryIcons = CATEGORY_ICONS;
+  protected readonly pathGradient = `linear-gradient(90deg, ${PATH_COLORS.start}, ${PATH_COLORS.end})`;
 
   protected readonly trips = signal<Trip[]>([]);
   protected readonly isLoading = signal(true);
@@ -93,11 +113,41 @@ export class MyJourney {
     return counts;
   });
 
+  // ── One trip's spending (?trip=<id>) ──
+  /** From the URL, so the browser's back button and links (the expense page's Map button) work. */
+  private readonly selectedTripId = signal<string | null>(null);
+  protected readonly selectedTrip = computed(() => this.trips().find((trip) => trip.id === this.selectedTripId()) ?? null);
+  protected readonly tripExpenses = signal<Expense[]>([]);
+  protected readonly tripExpensesState = signal<'idle' | 'loading' | 'ready' | 'failed'>('idle');
+  protected readonly showPath = signal(true);
+  protected readonly spots = computed(() => buildSpendingSpots(this.tripExpenses()));
+  protected readonly journeyPath = computed(() => buildJourneyPath(this.tripExpenses(), this.spots()));
+  protected readonly spendingDays = computed(() => {
+    const trip = this.selectedTrip();
+    return trip ? groupByDay(this.tripExpenses(), trip.startDate) : [];
+  });
+  protected readonly locatedExpenseCount = computed(() => this.tripExpenses().filter(isExpenseLocated).length);
+  /** Expense id → the number of its pin, linking list rows to the map. */
+  protected readonly spotOrderByExpense = computed(
+    () => new Map(this.spots().flatMap((spot) => spot.expenses.map((expense) => [expense.id, spot.order] as const))),
+  );
+
   constructor() {
     // Browser-only: MapLibre needs WebGL, window and document.
     afterNextRender(() => {
       void this.initMap().then(() => this.loadTrips());
     });
+
+    this.route.queryParamMap
+      .pipe(
+        mapTo((params) => params.get('trip')),
+        distinctUntilChanged(),
+        takeUntilDestroyed(),
+      )
+      .subscribe((tripId) => {
+        this.selectedTripId.set(tripId);
+        void this.applySelection();
+      });
 
     this.destroyRef.onDestroy(() => this.map?.remove());
   }
@@ -114,6 +164,7 @@ export class MyJourney {
       this.isLoading.set(false);
     }
 
+    void this.applySelection();
     await this.locateMissingTrips();
   }
 
@@ -169,6 +220,11 @@ export class MyJourney {
 
     this.map.addControl(new maplibre.NavigationControl({ showCompass: false }), 'top-left');
 
+    this.spendingLayer = new TripSpendingLayer(this.map, maplibre, this.document, {
+      amount: (amount) => formatCurrency(amount, this.selectedTrip()?.currency),
+      date: (date) => this.dateFormat.transform(date),
+    });
+
     // OpenFreeMap's dark style refers to an icon its sprite doesn't contain ("circle-11").
     // Register an invisible placeholder instead of logging a warning for every tile.
     const map = this.map;
@@ -181,6 +237,7 @@ export class MyJourney {
       this.map?.setProjection({ type: 'globe' });
       this.useEnglishPlaceNames();
       this.addTripsSource();
+      this.spendingLayer?.addToStyle();
     });
 
     // Cheap with a few dozen trips; this is how MapLibre's HTML-cluster example keeps markers in sync.
@@ -293,6 +350,14 @@ export class MyJourney {
    * every cluster, and removes the rest. Runs on every render (move, zoom, data change).
    */
   private syncMarkers(): void {
+    // One trip open: its spending pins instead of the trip pins.
+    if (this.selectedTrip()) {
+      for (const marker of this.shownMarkers) marker.remove();
+      this.shownMarkers.clear();
+      this.spendingLayer?.syncMarkers();
+      return;
+    }
+
     const map = this.map;
     if (!map?.getSource(TRIPS_SOURCE) || !map.isSourceLoaded(TRIPS_SOURCE)) return;
 
@@ -343,8 +408,18 @@ export class MyJourney {
     );
     map.getSource<MapLibre.GeoJSONSource>(TRIPS_SOURCE)?.setData(this.tripsGeoJson());
 
+    // With one trip open, newly located trips mustn't pull the view away from it.
+    if (this.selectedTripId()) return;
     // Jump on the first render; animate when later updates (newly located trips) move the view.
-    const animate = this.hasFramedTrips;
+    this.frameTrips(this.hasFramedTrips);
+  }
+
+  /** Fits the view to all trip pins. */
+  private frameTrips(animate: boolean): void {
+    const maplibre = this.maplibre;
+    const map = this.map;
+    if (!maplibre || !map) return;
+    const groups = this.placeGroups();
     this.hasFramedTrips = groups.length > 0;
 
     if (groups.length === 0) {
@@ -512,11 +587,131 @@ export class MyJourney {
       `${this.currencyFormat.transform(trip.spent, trip.currency)} of ${this.currencyFormat.transform(trip.budget, trip.currency)} spent`,
     );
 
-    const button = this.document.createElement('button');
-    button.type = 'button';
-    button.className = 'journey-popup-link';
-    button.textContent = 'View expenses →';
-    button.addEventListener('click', () => this.router.navigate(['/expenses', trip.id]));
-    container.appendChild(button);
+    const actions = this.document.createElement('div');
+    actions.className = 'journey-popup-actions';
+    const action = (text: string, onClick: () => void) => {
+      const button = this.document.createElement('button');
+      button.type = 'button';
+      button.className = 'journey-popup-link';
+      button.textContent = text;
+      button.addEventListener('click', onClick);
+      actions.appendChild(button);
+    };
+    action('Spending map', () => this.openTrip(trip.id));
+    action('View expenses →', () => this.router.navigate(['/expenses', trip.id]));
+    container.appendChild(actions);
+  }
+
+  // ── One trip's spending ────────────────────────────────────────────────────
+
+  /** Shows a trip's spending on the map. Goes through the URL, so Back returns to all trips. */
+  protected openTrip(tripId: string): void {
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { trip: tripId }, queryParamsHandling: 'merge' });
+  }
+
+  protected closeTrip(): void {
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { trip: null }, queryParamsHandling: 'merge' });
+  }
+
+  /**
+   * Brings the map in line with the URL: a trip's spending for ?trip=<id>, all trips otherwise.
+   * Runs when the URL changes and once the trips have loaded.
+   */
+  private async applySelection(): Promise<void> {
+    const tripId = this.selectedTripId();
+    if (!tripId) {
+      this.leaveTripView();
+      return;
+    }
+    if (this.isLoading() || !this.map) return; // loadTrips() calls this again once the trips are in
+
+    const trip = this.trips().find((candidate) => candidate.id === tripId);
+    if (!trip) {
+      // Not one of the user's trips (left it, deleted it, or a stale link): back to all trips.
+      void this.router.navigate([], { relativeTo: this.route, queryParams: { trip: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      return;
+    }
+    if (this.shownTripId === tripId) return;
+
+    this.shownTripId = tripId;
+    this.closeTripPopups();
+    this.spendingLayer?.clear();
+    this.tripExpenses.set([]);
+    this.tripExpensesState.set('loading');
+    this.map.triggerRepaint(); // syncMarkers() hides the trip pins on the next render
+
+    try {
+      const expenses = await firstValueFrom(this.expenseService.getExpensesByTripId(tripId));
+      if (this.selectedTripId() !== tripId) return; // another trip (or none) was chosen meanwhile
+      this.tripExpenses.set(expenses);
+      this.tripExpensesState.set('ready');
+      this.drawTripSpending(trip);
+    } catch {
+      if (this.selectedTripId() !== tripId) return;
+      this.tripExpensesState.set('failed');
+      this.shownTripId = null; // so Try again reloads
+    }
+  }
+
+  private drawTripSpending(trip: Trip): void {
+    const spots = this.spots();
+    this.spendingLayer?.show(spots, this.journeyPath());
+    this.spendingLayer?.setPathVisible(this.showPath());
+    if (spots.length > 0) {
+      this.spendingLayer?.fit(spots);
+    } else if (isLocated(trip)) {
+      this.map?.flyTo({ center: [trip.longitude, trip.latitude], zoom: TRIP_VIEW_FALLBACK_ZOOM });
+    }
+  }
+
+  private leaveTripView(): void {
+    if (this.shownTripId === null && this.tripExpensesState() === 'idle') return;
+    this.shownTripId = null;
+    this.spendingLayer?.clear();
+    this.tripExpenses.set([]);
+    this.tripExpensesState.set('idle');
+    this.map?.triggerRepaint(); // syncMarkers() brings the trip pins back
+    this.frameTrips(true);
+  }
+
+  private closeTripPopups(): void {
+    for (const marker of this.placeMarkers) if (marker.getPopup()?.isOpen()) marker.togglePopup();
+  }
+
+  protected retryTripExpenses(): void {
+    void this.applySelection();
+  }
+
+  protected togglePath(): void {
+    this.showPath.update((shown) => !shown);
+    this.spendingLayer?.setPathVisible(this.showPath());
+  }
+
+  protected highlightSpot(order: number | null | undefined): void {
+    this.spendingLayer?.highlight(order ?? null);
+  }
+
+  protected focusSpot(order: number): void {
+    this.spendingLayer?.focusSpot(order);
+  }
+
+  /** Frames the places money was spent on one day. */
+  protected showDay(day: SpendingDay): void {
+    const orders = new Set(day.expenses.map((expense) => this.spotOrderByExpense().get(expense.id)));
+    this.spendingLayer?.fit(this.spots().filter((spot) => orders.has(spot.order)));
+  }
+
+  protected dayHasSpots(day: SpendingDay): boolean {
+    return day.expenses.some((expense) => this.spotOrderByExpense().has(expense.id));
+  }
+
+  /** "Day 2 · Mon, 21 Dec", or "Before the trip · …" for bookings paid ahead. */
+  protected dayTitle(day: SpendingDay): string {
+    const date = DAY_FORMAT.format(new Date(`${day.key}T00:00:00Z`));
+    return `${day.dayNumber >= 1 ? `Day ${day.dayNumber}` : 'Before the trip'} · ${date}`;
+  }
+
+  protected openExpenses(tripId: string): void {
+    void this.router.navigate(['/expenses', tripId]);
   }
 }
