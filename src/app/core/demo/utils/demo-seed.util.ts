@@ -13,12 +13,36 @@ const USERS: DemoUser[] = [
 ];
 
 /**
- * [day, category, amount, description, paid by]. The day is days from today, or
+ * [day, category, amount, description, paid by, where]. The day is days from today, or
  * EARLY_THIS_MONTH for a day that makes the dashboard's Today, Week and Month totals differ.
+ * `where` puts the expense on the trip map; some trips have none, to show that state too.
  */
 const EARLY_THIS_MONTH = 'early-this-month';
 type SeedDay = number | typeof EARLY_THIS_MONTH;
-type SeedExpense = [day: SeedDay, category: ExpenseCategory, amount: number, description: string, paidBy?: string];
+type SeedSpot = [lat: number, lng: number, placeName: string];
+type SeedExpense = [day: SeedDay, category: ExpenseCategory, amount: number, description: string, paidBy?: string, where?: SeedSpot];
+
+// Places the sample expenses happened at. Reused spots (the same hotel twice) share one pin.
+const COCHIN_AIRPORT: SeedSpot = [10.152, 76.4019, 'Cochin International Airport, Nedumbassery'];
+const ALAPPUZHA_JETTY: SeedSpot = [9.4977, 76.3389, 'Alappuzha Boat Jetty, Alappuzha'];
+const PUNNAMADA: SeedSpot = [9.5106, 76.35, 'Punnamada Finishing Point, Alappuzha'];
+const VEMBANAD: SeedSpot = [9.5203, 76.3792, 'Vembanad Lake, Kainakary'];
+const KUTTANAD: SeedSpot = [9.4655, 76.4093, 'Kuttanad backwaters, Kainakary'];
+const MULLAKKAL: SeedSpot = [9.4952, 76.3335, 'Mullakkal Bazaar, Alappuzha'];
+const CALANGUTE: SeedSpot = [15.5439, 73.7553, 'Calangute Beach, Calangute'];
+const BAGA: SeedSpot = [15.5559, 73.7517, 'Baga Road, Baga'];
+const DUDHSAGAR: SeedSpot = [15.3144, 74.3143, 'Dudhsagar Falls, Sonaulim'];
+const MAPUSA: SeedSpot = [15.5937, 73.8142, 'Mapusa Market, Mapusa'];
+const JAIPUR_JUNCTION: SeedSpot = [26.9196, 75.7878, 'Jaipur Junction, Jaipur'];
+const PINK_CITY: SeedSpot = [26.9239, 75.8267, 'Old City, Jaipur'];
+const AMBER_FORT: SeedSpot = [26.9855, 75.8513, 'Amber Fort, Amer'];
+const CHOKHI_DHANI: SeedSpot = [26.7672, 75.8357, 'Chokhi Dhani, Jaipur'];
+const BAPU_BAZAAR: SeedSpot = [26.9178, 75.8195, 'Bapu Bazaar, Jaipur'];
+const SUVARNABHUMI: SeedSpot = [13.69, 100.7501, 'Suvarnabhumi Airport, Bang Phli'];
+const SILOM: SeedSpot = [13.7262, 100.5234, 'Silom, Bang Rak'];
+const YAOWARAT: SeedSpot = [13.7406, 100.5097, 'Yaowarat Road, Samphanthawong'];
+const DAMNOEN_SADUAK: SeedSpot = [13.5199, 99.9594, 'Damnoen Saduak Floating Market, Ratchaburi'];
+const CHATUCHAK: SeedSpot = [13.7999, 100.5502, 'Chatuchak Weekend Market, Chatuchak'];
 
 interface SeedTrip {
   key: string;
@@ -41,13 +65,13 @@ const TRIPS: SeedTrip[] = [
     key: 'kerala', name: 'Kerala Backwaters', destination: 'Alleppey', country: 'India',
     start: -2, end: 3, budget: 45000, status: 'ongoing', at: [9.4981, 76.3388], members: [ME, ARJUN, MEERA],
     expenses: [
-      [-2, 'transport', 8400, 'Flights to Kochi', ME],
-      [-2, 'transport', 1800, 'Cab to Alleppey', ARJUN],
-      [-2, 'accommodation', 12000, 'Houseboat, 1 night', ME],
-      [-1, 'food', 2350, 'Karimeen lunch on the boat', MEERA],
-      [-1, 'activities', 1500, 'Kayaking in the canals', ARJUN],
-      [0, 'food', 960, 'Breakfast: appam and stew', ME],
-      [0, 'souvenirs', 1200, 'Spices from the market', MEERA],
+      [-2, 'transport', 8400, 'Flights to Kochi', ME, COCHIN_AIRPORT],
+      [-2, 'transport', 1800, 'Cab to Alleppey', ARJUN, ALAPPUZHA_JETTY],
+      [-2, 'accommodation', 12000, 'Houseboat, 1 night', ME, PUNNAMADA],
+      [-1, 'food', 2350, 'Karimeen lunch on the boat', MEERA, VEMBANAD],
+      [-1, 'activities', 1500, 'Kayaking in the canals', ARJUN, KUTTANAD],
+      [0, 'food', 960, 'Breakfast: appam and stew', ME, MULLAKKAL],
+      [0, 'souvenirs', 1200, 'Spices from the market', MEERA, MULLAKKAL],
     ],
   },
   {
@@ -62,11 +86,11 @@ const TRIPS: SeedTrip[] = [
     key: 'jaipur', name: 'Jaipur Heritage Walk', destination: 'Jaipur', country: 'India',
     start: -46, end: -42, budget: 25000, status: 'completed', at: [26.9124, 75.7873],
     expenses: [
-      [-46, 'transport', 4200, 'Train to Jaipur'],
-      [-46, 'accommodation', 7600, 'Haveli stay, 4 nights'],
-      [-45, 'activities', 1800, 'Amber Fort and City Palace tickets'],
-      [-44, 'food', 2400, 'Dal baati at Chokhi Dhani'],
-      [-43, 'souvenirs', 3100, 'Block-print bedsheets'],
+      [-46, 'transport', 4200, 'Train to Jaipur', ME, JAIPUR_JUNCTION],
+      [-46, 'accommodation', 7600, 'Haveli stay, 4 nights', ME, PINK_CITY],
+      [-45, 'activities', 1800, 'Amber Fort and City Palace tickets', ME, AMBER_FORT],
+      [-44, 'food', 2400, 'Dal baati at Chokhi Dhani', ME, CHOKHI_DHANI],
+      [-43, 'souvenirs', 3100, 'Block-print bedsheets', ME, BAPU_BAZAAR],
       [-42, 'transport', 1100, 'Auto rides'],
     ],
   },
@@ -75,11 +99,11 @@ const TRIPS: SeedTrip[] = [
     key: 'goa', name: 'Goa Monsoon Escape', destination: 'Goa', country: 'India',
     start: -128, end: -124, budget: 20000, status: 'completed', at: [15.4909, 73.8278], members: [ME, ARJUN],
     expenses: [
-      [-128, 'accommodation', 9600, 'Beach shack stay', ME],
-      [-128, 'transport', 5200, 'Scooter rental and fuel', ARJUN],
-      [-127, 'food', 4800, 'Seafood dinners', ME],
-      [-126, 'activities', 3500, 'Dudhsagar falls trip', ARJUN],
-      [-125, 'other', 900, 'Rain ponchos', ME],
+      [-128, 'accommodation', 9600, 'Beach shack stay', ME, CALANGUTE],
+      [-128, 'transport', 5200, 'Scooter rental and fuel', ARJUN, BAGA],
+      [-127, 'food', 4800, 'Seafood dinners', ME, BAGA],
+      [-126, 'activities', 3500, 'Dudhsagar falls trip', ARJUN, DUDHSAGAR],
+      [-125, 'other', 900, 'Rain ponchos', ME, MAPUSA],
     ],
   },
   {
@@ -96,11 +120,11 @@ const TRIPS: SeedTrip[] = [
     key: 'bangkok', name: 'Bangkok Street Food', destination: 'Bangkok', country: 'Thailand',
     start: -330, end: -325, budget: 55000, status: 'completed', at: [13.7563, 100.5018], members: [ME, MEERA],
     expenses: [
-      [-330, 'transport', 21000, 'Return flights', ME],
-      [-330, 'accommodation', 14500, 'Hotel in Silom', MEERA],
-      [-329, 'food', 6200, 'Yaowarat night market', ME],
-      [-328, 'activities', 3800, 'Floating market tour', MEERA],
-      [-326, 'souvenirs', 2600, 'Chatuchak market finds', ME],
+      [-330, 'transport', 21000, 'Return flights', ME, SUVARNABHUMI],
+      [-330, 'accommodation', 14500, 'Hotel in Silom', MEERA, SILOM],
+      [-329, 'food', 6200, 'Yaowarat night market', ME, YAOWARAT],
+      [-328, 'activities', 3800, 'Floating market tour', MEERA, DAMNOEN_SADUAK],
+      [-326, 'souvenirs', 2600, 'Chatuchak market finds', ME, CHATUCHAK],
     ],
   },
   {
@@ -186,7 +210,7 @@ function buildTrip(seed: SeedTrip, today: Date): { trip: DemoTrip; expenses: Dem
     creatorId: seed.creator ?? ME,
     memberIds,
   };
-  const expenses = seed.expenses.map(([seedDay, category, amount, description, paidBy = ME], index): DemoExpense => {
+  const expenses = seed.expenses.map(([seedDay, category, amount, description, paidBy = ME, where], index): DemoExpense => {
     const day = seedDay === EARLY_THIS_MONTH ? earlyThisMonthOffset(today) : seedDay;
     return {
       id: `${SAMPLE_ID_PREFIX}expense-${seed.key}-${index + 1}`,
@@ -197,6 +221,9 @@ function buildTrip(seed: SeedTrip, today: Date): { trip: DemoTrip; expenses: Dem
       date: expenseTime(today, day, index),
       paidBy,
       splits: equalSplits(amount, memberIds, paidBy),
+      latitude: where?.[0] ?? null,
+      longitude: where?.[1] ?? null,
+      placeName: where?.[2] ?? null,
     };
   });
   return { trip, expenses };

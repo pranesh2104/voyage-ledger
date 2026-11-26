@@ -29,7 +29,8 @@ export class DemoApiError extends Error {
 }
 
 type Params = string[];
-type Handler = (state: DemoState, params: Params, body: Record<string, any>, now: Date) => DemoResult;
+type Query = Record<string, string>;
+type Handler = (state: DemoState, params: Params, body: Record<string, any>, now: Date, query: Query) => DemoResult;
 
 const ok = (data: unknown, message?: string, status = 200): DemoResult => ({ status, data, message });
 const fail = (status: number, message: string): never => {
@@ -101,6 +102,9 @@ function expenseDto(state: DemoState, expense: DemoExpense): ExpenseDTO {
     paidByYou,
     yourShare: expense.splits.find(s => s.userId === state.userId)?.share,
     owedToYou: paidByYou ? expense.splits.filter(s => s.userId !== state.userId) : undefined,
+    latitude: expense.latitude ?? null,
+    longitude: expense.longitude ?? null,
+    placeName: expense.placeName ?? null,
   };
 }
 
@@ -246,12 +250,28 @@ const listExpenses: Handler = (state, [tripId]) => {
   return ok(expenses, 'Expenses fetched successfully');
 };
 
+type Location = Pick<DemoExpense, 'latitude' | 'longitude' | 'placeName'>;
+
+const isCoordinate = (value: unknown, limit: number): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= limit;
+
+/** Like the backend: undefined when the body has no location fields (an edit keeps the stored one). */
+function readLocation(body: Record<string, any>): Location | undefined {
+  const { latitude, longitude, placeName } = body;
+  if (latitude === undefined && longitude === undefined && placeName === undefined) return undefined;
+  if (latitude === null && longitude === null) return { latitude: null, longitude: null, placeName: null };
+  if (!isCoordinate(latitude, 90) || !isCoordinate(longitude, 180)) fail(400, DEMO_MESSAGES.badLocation);
+  if (placeName != null && (typeof placeName !== 'string' || placeName.trim().length > 200)) fail(400, DEMO_MESSAGES.badPlaceName);
+  return { latitude, longitude, placeName: typeof placeName === 'string' && placeName.trim() ? placeName.trim() : null };
+}
+
 const createExpense: Handler = (state, _p, body) => {
   const { tripId, category, amount, date } = body;
   if (!tripId || !category || amount === undefined || !date) fail(400, DEMO_MESSAGES.missingExpenseFields);
   const trip = findTrip(state, tripId);
   const total = Number(amount);
   const paidBy = body['paidBy'] && trip.memberIds.includes(body['paidBy']) ? String(body['paidBy']) : state.userId;
+  const location = readLocation(body) ?? { latitude: null, longitude: null, placeName: null };
   const expense: DemoExpense = {
     id: newId('expense'),
     tripId,
@@ -262,6 +282,7 @@ const createExpense: Handler = (state, _p, body) => {
     paidBy,
     // Without a split the payer carries the whole amount, so nobody owes anything for it.
     splits: readSplits(body, total) ?? [{ userId: paidBy, share: total }],
+    ...location,
   };
   state.expenses.push(expense);
   return ok(expenseDto(state, expense), 'Expense created successfully', 201);
@@ -274,11 +295,13 @@ const updateExpense: Handler = (state, _p, body) => {
   const total = body['amount'] !== undefined ? Number(body['amount']) : expense.amount;
   const splits = readSplits(body, total);
   if (splits && expense.paidBy !== state.userId) fail(403, DEMO_MESSAGES.splitPayerOnly);
+  const location = readLocation(body);
 
   if (body['category'] !== undefined) expense.category = CATEGORIES.includes(body['category']) ? body['category'] : 'other';
   expense.amount = total;
   expense.description = String(body['description'] ?? '');
   if (body['date'] !== undefined) expense.date = String(body['date']);
+  if (location) Object.assign(expense, location);
   if (splits) {
     expense.splits = splits;
   } else if (Math.abs(expense.splits.reduce((sum, s) => sum + s.share, 0) - total) > 0.01) {
@@ -419,6 +442,61 @@ const declineInvite: Handler = (state, [inviteId]) => {
   return ok(null, 'Invite declined');
 };
 
+// ── Places (the real API asks Photon; the demo searches its own place list) ──
+
+interface DemoPlace {
+  name: string;
+  area: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+}
+
+/** Sample spots used by the sample expenses, plus the cities in DEMO_PLACES. */
+function demoPlaces(state: DemoState): DemoPlace[] {
+  const spots = new Map<string, DemoPlace>();
+  for (const e of state.expenses) {
+    if (e.latitude == null || e.longitude == null || !e.placeName || spots.has(e.placeName)) continue;
+    const [name, ...rest] = e.placeName.split(', ');
+    spots.set(e.placeName, { name, area: rest.join(', '), label: e.placeName, latitude: e.latitude, longitude: e.longitude });
+  }
+  const cities = Object.entries(DEMO_PLACES).map(([key, [latitude, longitude]]) => {
+    const name = key.replace(/\b\w/g, c => c.toUpperCase());
+    return { name, area: '', label: name, latitude, longitude };
+  });
+  return [...spots.values(), ...cities];
+}
+
+/** Distance in metres (haversine). */
+function metresBetween(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }): number {
+  const rad = Math.PI / 180;
+  const dLat = (b.latitude - a.latitude) * rad;
+  const dLng = (b.longitude - a.longitude) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
+}
+
+const searchPlaces: Handler = (state, _p, _b, _n, query) => {
+  const q = (query['q'] ?? '').trim().toLowerCase();
+  if (q.length < 2 || q.length > 200) fail(400, DEMO_MESSAGES.shortQuery);
+  const near = { latitude: Number(query['lat']), longitude: Number(query['lon']) };
+  const hasNear = Number.isFinite(near.latitude) && Number.isFinite(near.longitude) && query['lat'] !== undefined;
+  const matches = demoPlaces(state)
+    .filter(place => `${place.name} ${place.area}`.toLowerCase().includes(q))
+    .sort((a, b) => (hasNear ? metresBetween(near, a) - metresBetween(near, b) : 0));
+  return ok(matches.slice(0, 6), 'Places fetched successfully');
+};
+
+const reversePlace: Handler = (state, _p, _b, _n, query) => {
+  const point = { latitude: Number(query['lat']), longitude: Number(query['lon']) };
+  if (!isCoordinate(point.latitude, 90) || !isCoordinate(point.longitude, 180)) fail(400, DEMO_MESSAGES.badPoint);
+  const nearest = demoPlaces(state)
+    .map(place => ({ place, metres: metresBetween(point, place) }))
+    .filter(({ metres }) => metres <= 250)
+    .sort((a, b) => a.metres - b.metres)[0];
+  return ok(nearest?.place ?? null, nearest ? 'Place fetched successfully' : 'No named place here');
+};
+
 const notInDemo: Handler = () => fail(403, DEMO_MESSAGES.notInDemo);
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -453,6 +531,8 @@ const ROUTES: [method: string, pattern: string, handler: Handler][] = [
   ['POST', '/expenses', createExpense],
   ['PUT', '/expenses', updateExpense],
   ['DELETE', '/expenses', deleteExpense],
+  ['GET', '/places/search', searchPlaces],
+  ['GET', '/places/reverse', reversePlace],
 ];
 
 function match(pattern: string, path: string): Params | null {
@@ -473,8 +553,8 @@ export function handleDemoRequest(state: DemoState, request: DemoRequest, now = 
   for (const [method, pattern, handler] of ROUTES) {
     if (method !== request.method) continue;
     const params = match(pattern, path);
-    if (params) return handler(state, params, body, now);
+    if (params) return handler(state, params, body, now, request.query ?? {});
   }
   // Sign-up, password, email and avatar changes, and anything else without a demo version.
-  return path.startsWith('/auth/') ? notInDemo(state, [], body, now) : fail(404, DEMO_MESSAGES.notFound);
+  return path.startsWith('/auth/') ? notInDemo(state, [], body, now, {}) : fail(404, DEMO_MESSAGES.notFound);
 }

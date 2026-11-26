@@ -2,7 +2,7 @@
 export const DEMO_STORAGE_KEY = 'voyage-ledger.demo';
 
 /** Bump when the shape of DemoState changes, so an old tab's data is replaced by fresh sample data. */
-export const DEMO_STATE_VERSION = 1;
+export const DEMO_STATE_VERSION = 2;
 
 /** Ids of the sample data start with this; records added during the visit get other ids. */
 export const SAMPLE_ID_PREFIX = 'sample-';
@@ -25,6 +25,10 @@ export const DEMO_MESSAGES = {
   invalidEmail: 'Enter a valid email address.',
   missingTripFields: 'Missing required fields: name, destination, startDate, endDate',
   missingExpenseFields: 'Missing required fields: tripId, category, amount, date',
+  badLocation: 'latitude (-90 to 90) and longitude (-180 to 180) must both be numbers, or both null',
+  badPlaceName: 'placeName must be text of at most 200 characters',
+  shortQuery: 'q must be 2 to 200 characters',
+  badPoint: 'lat (-90 to 90) and lon (-180 to 180) are required',
 } as const;
 
 /**

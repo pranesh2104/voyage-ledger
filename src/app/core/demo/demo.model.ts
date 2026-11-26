@@ -33,6 +33,10 @@ export interface DemoExpense {
   date: string;
   paidBy: string;
   splits: ExpenseSplitInput[];
+  /** Where it was spent; all three null (or missing in older demo data) when no location was added. */
+  latitude?: number | null;
+  longitude?: number | null;
+  placeName?: string | null;
 }
 
 /** An invite the demo user sent for one of their trips. */
@@ -70,6 +74,8 @@ export interface DemoRequest {
   /** Path without the query string, e.g. "/trips/sample-trip-goa/expenses". */
   path: string;
   body: unknown;
+  /** Query parameters, e.g. { q: 'beach' } for /places/search. */
+  query?: Record<string, string>;
 }
 
 export interface DemoResult {

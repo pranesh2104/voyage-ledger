@@ -27,7 +27,8 @@ export const demoInterceptor: HttpInterceptorFn = (req, next) => {
     }
 
     try {
-      const result = handleDemoRequest(state, { method: req.method, path: req.url, body: req.body });
+      const query = Object.fromEntries(req.params.keys().map(key => [key, req.params.get(key) ?? '']));
+      const result = handleDemoRequest(state, { method: req.method, path: req.url, body: req.body, query });
       if (req.method !== 'GET') store.save();
       // A copy, so a component changing a response object can't change the stored data.
       const body = structuredClone({ success: true, data: result.data, ...(result.message && { message: result.message }) });

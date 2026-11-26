@@ -230,4 +230,53 @@ describe('demo API', () => {
       expect(callError(state, 'GET', '/nope').status).toBe(404);
     });
   });
+
+  describe('expense locations and place search', () => {
+    const KERALA = 'sample-trip-kerala';
+    const BAGA = { latitude: 15.5559, longitude: 73.7517 };
+    const search = (query: Record<string, string>) =>
+      handleDemoRequest(state, { method: 'GET', path: '/places/search', body: null, query }, NOW).data as { label: string; latitude: number }[];
+    const reverse = (query: Record<string, string>) =>
+      handleDemoRequest(state, { method: 'GET', path: '/places/reverse', body: null, query }, NOW).data as { label: string } | null;
+
+    it('puts some sample trips on the map and leaves others without locations', () => {
+      const kerala = call<ExpenseDTO[]>(state, 'GET', `/trips/${KERALA}/expenses`);
+      expect(kerala.every(e => typeof e.latitude === 'number' && e.placeName)).toBe(true);
+      const rishikesh = call<ExpenseDTO[]>(state, 'GET', '/trips/sample-trip-rishikesh/expenses');
+      expect(rishikesh.every(e => e.latitude === null && e.placeName === null)).toBe(true);
+    });
+
+    it('saves a location, keeps it on edits that leave it out, and clears it with nulls', () => {
+      const base = { tripId: KERALA, category: 'food', amount: 500, description: 'Tea', date: '2026-11-04' };
+      const created = call<ExpenseDTO>(state, 'POST', '/expenses', { ...base, latitude: 9.5, longitude: 76.3, placeName: ' Tea stall ' });
+      expect([created.latitude, created.longitude, created.placeName]).toEqual([9.5, 76.3, 'Tea stall']);
+
+      const kept = call<ExpenseDTO>(state, 'PUT', '/expenses', { ...base, expenseId: created.id, amount: 600 });
+      expect([kept.amount, kept.placeName]).toEqual([600, 'Tea stall']);
+
+      const cleared = call<ExpenseDTO>(state, 'PUT', '/expenses', { ...base, expenseId: created.id, latitude: null, longitude: null, placeName: 'x' });
+      expect([cleared.latitude, cleared.longitude, cleared.placeName]).toEqual([null, null, null]);
+    });
+
+    it('rejects a half or out-of-range location like the backend', () => {
+      const base = { tripId: KERALA, category: 'food', amount: 500, description: 'Tea', date: '2026-11-04' };
+      expect(callError(state, 'POST', '/expenses', { ...base, latitude: 9.5 }).message).toBe(DEMO_MESSAGES.badLocation);
+      expect(callError(state, 'POST', '/expenses', { ...base, latitude: 95, longitude: 76 }).status).toBe(400);
+      expect(callError(state, 'POST', '/expenses', { ...base, latitude: 9, longitude: 76, placeName: 'x'.repeat(201) }).message).toBe(DEMO_MESSAGES.badPlaceName);
+    });
+
+    it('searches the sample places, nearest to the trip first', () => {
+      const results = search({ q: 'market', lat: '13.75', lon: '100.5' }); // near Bangkok
+      expect(results.map(r => r.label)).toContain('Mapusa Market, Mapusa');
+      expect(results[0].label).toBe('Chatuchak Weekend Market, Chatuchak');
+      expect(search({ q: 'goa' }).map(r => r.label)).toContain('Goa');
+      expect(() => search({ q: 'g' })).toThrow(DemoApiError);
+    });
+
+    it('names a GPS position after a sample place within 250 m, or nothing', () => {
+      expect(reverse({ lat: String(BAGA.latitude + 0.001), lon: String(BAGA.longitude) })?.label).toBe('Baga Road, Baga');
+      expect(reverse({ lat: '15.40', lon: '74.10' })).toBeNull();
+      expect(() => reverse({ lat: '95', lon: '0' })).toThrow(DemoApiError);
+    });
+  });
 });
