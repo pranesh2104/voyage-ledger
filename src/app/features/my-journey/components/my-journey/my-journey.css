@@ -234,3 +234,109 @@ app-my-journey .journey-cluster .journey-label {
   left: 40px;
   top: 7px;
 }
+
+/* ── One trip's spending ───────────────────────────────────────────────── */
+
+/* Popup buttons: "Spending map" and "View expenses →" side by side. */
+app-my-journey .journey-popup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+/* Spending pin: a circle in the category colour with its icon, sized by the amount spent
+   there (--spot-size), and the visit number in a corner. Like .journey-marker, no `position`:
+   MapLibre's own class positions it. */
+app-my-journey .spend-marker {
+  width: var(--spot-size);
+  height: var(--spot-size);
+  cursor: pointer;
+}
+
+app-my-journey .spend-marker.is-highlighted {
+  z-index: 2;
+}
+
+app-my-journey .spend-pin {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--spot-color);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+  font-size: calc(var(--spot-size) * 0.45);
+  line-height: 1;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+app-my-journey .spend-marker:hover .spend-pin,
+app-my-journey .spend-marker.is-highlighted .spend-pin {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 4px rgb(99 102 241 / 0.45), 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+app-my-journey .spend-order {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: var(--color-foreground);
+  color: var(--color-background);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+app-my-journey .spend-label {
+  left: calc(var(--spot-size) + 6px);
+  top: calc(var(--spot-size) / 2 - 10px);
+}
+
+/* The same number as the pin, in the expense list beside the map. */
+app-my-journey .spend-list-order {
+  flex-shrink: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--color-foreground);
+  color: var(--color-background);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* Spending popup: icon, description and amount on one line, date and payer under it. */
+app-my-journey .spend-popup-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+app-my-journey .spend-popup-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+app-my-journey .spend-popup-amount {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-foreground);
+}
